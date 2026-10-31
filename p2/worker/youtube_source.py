@@ -59,7 +59,10 @@ def resolve(video_id):
 
 def main():
     request = json.loads(sys.stdin.readline())
-    video_id = find_video(request)
+    # The catalog already chose this video; re-searching would rematch on metadata that
+    # music videos and lyric uploads rarely satisfy.
+    known = request.get("videoId")
+    video_id = known if isinstance(known, str) and re.fullmatch(r"[A-Za-z0-9_-]{11}", known) else find_video(request)
     result = resolve(video_id) if request["type"] == "resolve" else {"videoId": video_id}
     print(json.dumps({"ok": True, "value": result}), flush=True)
 
