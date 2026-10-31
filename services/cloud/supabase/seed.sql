@@ -1,0 +1,2 @@
+-- Test accounts are provisioned through Auth by the integration harness.
+-- No passwords, tokens, real users, or provider data belong in database seeds.

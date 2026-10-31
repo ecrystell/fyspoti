@@ -1,0 +1,28 @@
+{
+  "name": "fyspoti",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24 <25" },
+  "workspaces": ["packages/*", "services/cloud"],
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b && tsc -p tsconfig.tests.json",
+    "pretest": "npm run build",
+    "test": "vitest run --config vitest.config.ts",
+    "check": "npm run typecheck && npm test",
+    "test:integration": "node scripts/run-local-integration.mjs",
+    "pretest:integration": "npm run build",
+    "test:cloud": "node --env-file=.env.cloud ./node_modules/vitest/vitest.mjs run --config vitest.integration.config.ts",
+    "pretest:cloud": "npm run build",
+    "cloud:start": "supabase start --workdir services/cloud",
+    "cloud:reset": "supabase db reset --local --workdir services/cloud",
+    "cloud:stop": "supabase stop --workdir services/cloud",
+    "cloud:advisors": "supabase db advisors --local --workdir services/cloud"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
+  }
+}

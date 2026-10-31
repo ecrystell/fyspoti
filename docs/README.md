@@ -1,6 +1,8 @@
 # Windows music app: implementation plans
 
-Drafted 2026-10-31. These are plans, not implemented features.
+Drafted 2026-10-31. Documents 01–15 describe the project plans. Person 3's first
+implementation slice and its validation/review status are recorded in
+[Part 1 setup and handoff](16-person-3-foundation.md).
 
 ## Confirmed decisions
 
