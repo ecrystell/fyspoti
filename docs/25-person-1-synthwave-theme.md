@@ -37,7 +37,7 @@ Bundled locally, because the production CSP allows only `font-src 'self' data:`,
 
 Keep the OFL files beside the fonts and include them in release notices. Do not modify the fonts under these names.
 
-Content that still comes from Spotify (the user's own playlist covers and the "petal" release card on Home) is data, not styling, and is unchanged.
+As of the hackathon-readiness pass, no Spotify content remains in the UI. `src/web-reference.ts` was deleted, which removed the Spotify CDN covers, the profile photo and the "petal" release card. Playlist covers now come from each playlist's own songs, and the Connect panel's links to Spotify's help pages are gone.
 
 ## Verification
 

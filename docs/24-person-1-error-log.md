@@ -33,3 +33,15 @@
 | `{"ok": false, "error": "Unexpected UTF-8 BOM (decode using utf-8-sig): line 1 column 1 (char 0)"}` | Piping JSON into `p2/worker/youtube_source.py` from Windows PowerShell 5.1, which adds a byte-order mark. The app sends plain UTF-8 | Pipe from Git Bash (`printf '%s\n' '{…}' \| p2/.venv/Scripts/python.exe p2/worker/youtube_source.py`) |
 | `node: command not found` / `npm: command not found` | No system Node.js on this machine | Use the bundled runtime that `launch.ps1` finds, or install Node 24 |
 | REA `analyze-web-bundle` returned 0 sources | The page had finished loading before observation started | Start observation before loading the page. See [23](23-context-menus.md#what-could-not-be-recovered) |
+
+## Update, 31 Oct (afternoon): hackathon-readiness pass
+
+| # | Change |
+| --- | --- |
+| E1 | **Mostly resolved** by P2's latest source changes. Non-downloaded tracks now stream full length: Blinding Lights 3:08 and the Great Pumpkin Waltz 2:36. The first play takes about 10 s to resolve, and a repeat play takes 1.6 s. Still failing: "Midnight City — M83" did not start within 30 s and showed no message (new **E7**) |
+| E2 | **Fixed in P1's UI.** `fail()` strips Electron's `Error invoking remote method '…': Error:` prefix, so people see only the service message |
+| E5 | Unchanged (P4 artist credit) |
+| E6 (new, open) | No error text. The **first play of a track takes about 10 s** with only a Pause button showing. **P2:** a resolving or buffering state the UI can display, or faster resolution. P1 can show "Loading…" once the state is exposed |
+| E7 (new, open) | No message. "Midnight City — M83" from search never starts. **P2/P4:** check the match and resolve for that track |
+| E8 (new, by design) | `Device downloads and legacy playback are unavailable in account mode.` P2/P3 disabled downloads and local files in account mode. P1's Download now stops at the first failure instead of repeating the error for each track |
+| E9 (new, open) | `This build has no cloud library configured…` in P1's sign-in dialog. **P1 + P3:** bind P1's account and import controls to P3's new `window.desktop.cloud` (email-code accounts) instead of the old `VITE_FYSPOTI_CLOUD_*` adapter |

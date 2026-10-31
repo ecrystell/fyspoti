@@ -88,3 +88,8 @@ Open and fixed integration errors: [24-person-1-error-log.md](24-person-1-error-
 ## Synthwave theme
 
 Original synthwave visual style replacing the Spotify look, scoped so P3's CloudApp is unaffected: [25-person-1-synthwave-theme.md](25-person-1-synthwave-theme.md).
+
+
+## Hackathon readiness
+
+Clean-room cleanup (Spotify reference data, links and seed content removed), sourced README submission section, [third-party notices](../THIRD_PARTY_NOTICES.md) and the [live demo script](26-demo-script.md).

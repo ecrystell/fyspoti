@@ -1,5 +1,70 @@
 # Fyspoti
 
+**A free, open-source (MIT) desktop music player, rebuilt in a clean room after studying how Spotify works. Built in one day for Autonomous SG 2026 (NUS Hackers).**
+
+## Hackathon submission
+
+### The target: Spotify Premium
+
+| | Spotify Premium, Singapore | Source |
+| --- | --- | --- |
+| Individual | **S$11.98 / month** (S$143.76 / year) | [spotify.com/sg-en/premium](https://www.spotify.com/sg-en/premium/), checked 31 Oct 2026 |
+| Student / Duo / Family | S$6.48 / S$16.98 / S$20.98 per month | same page |
+| People using Spotify | **788 million** monthly active users | [Spotify Q3 2026 results](https://newsroom.spotify.com/2026-10-22/spotify-q3-2026-earnings/), 22 Oct 2026 ([SEC 6-K](https://www.sec.gov/Archives/edgar/data/0001639920/000162828026066889/spot-20260930x6xk.htm)) |
+| People paying for Premium | **306 million** subscribers | same release |
+
+The same page lists what Premium adds over the free tier: "Ad-free music listening", "Download to listen offline", "Play songs in any order", "Lossless audio quality", "Listen with friends in real time" and "Organise listening queue". Fyspoti offers the first three, and a queue, at no cost.
+
+### Before / after cost, per user per month
+
+| | Spotify Premium Individual | Fyspoti |
+| --- | --- | --- |
+| Price to the listener | S$11.98 | **S$0**: free software, MIT licensed |
+| Playback, search, downloads | Included | Runs on your own computer, with no API keys or tokens to pay for |
+| Cloud library sync (accounts, playlists, likes) | Included | [Supabase](https://supabase.com/pricing) Free plan: **US$0** for up to 50,000 monthly active users and a 500 MB database. Above that, Pro is US$25/month for 100,000 MAU, about **US$0.00025 per user per month** |
+| **Total** | **S$11.98** | **S$0**, or about US$0.00025 at 100k users |
+
+Supabase prices are in USD from their pricing page, checked 31 Oct 2026. Free projects pause after a week of inactivity.
+
+### What we uncovered (and how we know)
+
+1. **How the Spotify desktop app is built.** The Windows Store app ships its UI as a ZIP-packaged webpack single-page app (`Apps/xpui.spa`). We analyzed it statically with [REA](docs/18-spotify-rea-investigation.md), reading only and never executing it. Findings:
+   - Route chunks (library, playlist, dialogs) are readable JavaScript and CSS. The shared core module table (`__webpack_modules__`), which holds the track context menu, is not on disk as text. It is injected from a compressed V8 startup snapshot.
+   - We recovered the design-token scale (spacing, radii, row heights), the submenu geometry (a filter row, one fixed row, then a list capped at 50vh) and the playlist-menu composition order. Evidence IDs, hashes and limits are in [docs 18](docs/18-spotify-rea-investigation.md), [20](docs/20-ui-components-and-motion.md) and [23](docs/23-context-menus.md).
+   - Nothing was copied. Reference files stay in a gitignored folder, and Fyspoti uses its own code, its own synthwave design and OFL fonts ([doc 25](docs/25-person-1-synthwave-theme.md)).
+2. **Spotify's "Download your data" export.** Only `Playlist*.json` and `YourLibrary.json` matter, and older exports have no track URIs. We tested this on 15 real public samples (41 playlists, 1,764 tracks, 0 unreadable rows). The importer never decompresses the account, email or payment files in the ZIP ([doc 18](docs/18-spotify-import.md)).
+3. **Where a free player can get music.** We measured providers ([doc 16](docs/16-provider-spike.md), [capability matrix](docs/17-provider-capability-matrix.md)):
+   - YouTube Music search found 20 of 20 test recordings, with a median of 1.0 s.
+   - MusicBrainz is good for identity but poor for search ranking.
+   - Our recording matcher got 50 of 51 labelled cases right with 0 false accepts ([doc 22](docs/22-catalog-core.md)).
+
+### What Fyspoti does
+
+- **Search and browse:** real catalog search, plus album and artist pages.
+- **Playback:** full-track streaming with queue, shuffle, repeat, seek and sleep timer.
+- **Library:** playlists, likes and an "Add to playlist" submenu.
+- **Spotify import:** bring your playlists and Liked Songs in from Spotify's own data export.
+- **Offline:** downloads that play without a connection, plus local files.
+- **Accounts:** email-code sign-in with cloud-synced private playlists.
+
+### Licence and honesty notes
+
+- Code: [MIT](LICENSE). Every dependency is listed with its licence in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). All bundled ones are permissive. GPL tools (FFmpeg, mutagen) are installed separately and not bundled.
+
+### Run the demo (Windows)
+
+```powershell
+npm ci                        # Node 24
+npm run setup:desktop         # downloads the Electron runtime
+./p2/setup.ps1                # Python environment for streaming and search (yt-dlp, ytmusicapi)
+winget install Gyan.FFmpeg    # ffprobe, used to verify downloads (optional)
+powershell -NoProfile -ExecutionPolicy Bypass -File .\launch.ps1
+```
+
+`launch.ps1` builds everything and opens the app. Accounts and cloud sync also need the local Supabase stack (Docker); see below. The browser-only preview is `npm run dev`. Checks run with `npm run check`.
+
+---
+
 Windows music application built by a four-person team. Implemented foundations include
 Person 3's secure cloud playlists, Person 2's playback/download module, and Person 4's
 provider spike and draft catalog contracts. Full application integration is in progress.
