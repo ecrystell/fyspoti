@@ -17,6 +17,7 @@
     "test": "vitest run --config vitest.config.ts",
     "check": "npm run typecheck && npm test && npm run check --workspace @fyspoti/contracts",
     "import:preview": "npm run build --silent && node scripts/spotify-import-preview.mjs",
+    "match:eval": "npm run build:packages --silent && node scripts/match-eval.mjs",
     "test:integration": "node scripts/run-local-integration.mjs",
     "test:migrations": "node scripts/check-library-upgrade.mjs",
     "pretest:integration": "npm run build",
