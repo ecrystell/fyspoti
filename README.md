@@ -1,8 +1,13 @@
 # Fyspoti
 
-Windows music application. The first implemented slice is Person 3's secure cloud
-playlist foundation. The Electron UI, playback, catalog adapters and full library
-synchronization are future slices described in [docs](docs/README.md).
+Windows music application built by a four-person team. Implemented foundations include
+Person 3's secure cloud playlists, Person 2's playback/download module, and Person 4's
+provider spike and draft catalog contracts. Full application integration is in progress.
+
+- [Plans and architecture](docs/README.md)
+- [Provider spike](docs/16-provider-spike.md) and [capability matrix](docs/17-provider-capability-matrix.md)
+- [Shared contracts](packages/contracts/README.md)
+- [Playback and downloads](p2/README.md)
 
 ## Development
 
@@ -30,10 +35,18 @@ hosted development validation, ownership boundaries, and acceptance status.
 
 ## Packages
 
-- `@fyspoti/contracts`: provider-independent playlist types and library interface.
+- `@fyspoti/contracts`: playlist types, catalog schemas, pagination and library/catalog interfaces.
 - `@fyspoti/library`: Supabase adapter and in-memory authentication helper.
 - `services/cloud`: Supabase configuration, migrations and fixture seed policy.
 
 Run `npm run build` before consuming workspace packages. Each package exports compiled
 JavaScript and TypeScript declarations. `npm run typecheck` builds them and checks the
 test harness. `npm test` runs deterministic API/error/pagination tests.
+
+## License
+
+The code and documentation in this repository are released under the [MIT License](LICENSE). Anyone may use and reuse them under those terms.
+
+The license covers only what this project wrote. It gives no rights to music, lyrics, artwork or data from third-party services, and those stay subject to their owners' terms. Third-party dependencies keep their own licenses.
+
+fyspoti is an independent project. It is not affiliated with or endorsed by Spotify, YouTube or any music provider. Anyone running it is responsible for how they use those services.

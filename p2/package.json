@@ -1,0 +1,16 @@
+{
+  "name": "fyspoti-p2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "check": "tsc --noEmit",
+    "build": "esbuild src/electron-main.ts src/electron-preload.ts --bundle --platform=node --format=cjs --external:electron --outdir=dist"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "electron": "45.1.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.0"
+  }
+}

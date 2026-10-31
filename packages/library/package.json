@@ -5,7 +5,7 @@
   "type": "module",
   "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
   "dependencies": {
-    "@fyspoti/contracts": "0.0.0",
+    "@fyspoti/contracts": "0.1.0-draft.0",
     "@supabase/supabase-js": "2.118.0"
   }
 }

@@ -1,0 +1,283 @@
+{
+  "ranAt": "2026-10-31T04:10:49Z",
+  "summary": {
+    "total": 20,
+    "foundInResults": 20,
+    "top1": 19,
+    "top5": 20,
+    "officialAudioTracks": 20,
+    "explicitFlagged": 4,
+    "labelsWithTraps": 17,
+    "medianMs": 1013.5,
+    "maxMs": 1850,
+    "errors": 0
+  },
+  "browse": {
+    "charts": {
+      "ok": false,
+      "error": "KeyError: 'musicTwoRowItemRenderer'"
+    },
+    "moodCategories": {
+      "ok": true,
+      "items": 2
+    },
+    "radioFromTrack": {
+      "ok": true,
+      "items": 50
+    }
+  },
+  "resolution": {
+    "resolved": true,
+    "ms": 2879,
+    "license": "Creative Commons Attribution license (reuse allowed)",
+    "codec": "mp4a.40.2",
+    "abrKbps": "387.853",
+    "container": "m4a",
+    "durationS": "635",
+    "urlLifetimeHours": 6.0,
+    "rangeStatus": 206,
+    "rangeType": "audio/mp4"
+  },
+  "search": [
+    {
+      "id": "queen-bohemian",
+      "tier": "mainstream",
+      "ms": 1850,
+      "error": null,
+      "returned": 40,
+      "rank": 1,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": false,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 6
+    },
+    {
+      "id": "queen-bohemian-liveaid",
+      "tier": "mainstream",
+      "ms": 1101,
+      "error": null,
+      "returned": 40,
+      "rank": 3,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": false,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 0
+    },
+    {
+      "id": "nirvana-teen-spirit",
+      "tier": "mainstream",
+      "ms": 933,
+      "error": null,
+      "returned": 40,
+      "rank": 1,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": false,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 2
+    },
+    {
+      "id": "mj-billie-jean",
+      "tier": "mainstream",
+      "ms": 1175,
+      "error": null,
+      "returned": 40,
+      "rank": 1,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": false,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 3
+    },
+    {
+      "id": "adele-rolling",
+      "tier": "mainstream",
+      "ms": 892,
+      "error": null,
+      "returned": 40,
+      "rank": 1,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": false,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 11
+    },
+    {
+      "id": "kendrick-humble",
+      "tier": "mainstream",
+      "ms": 997,
+      "error": null,
+      "returned": 40,
+      "rank": 1,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": true,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 24
+    },
+    {
+      "id": "swift-shake-it-off",
+      "tier": "mainstream",
+      "ms": 939,
+      "error": null,
+      "returned": 40,
+      "rank": 1,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": false,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 8
+    },
+    {
+      "id": "eilish-bad-guy",
+      "tier": "mainstream",
+      "ms": 1134,
+      "error": null,
+      "returned": 40,
+      "rank": 1,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": false,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 13
+    },
+    {
+      "id": "radiohead-creep",
+      "tier": "mainstream",
+      "ms": 1060,
+      "error": null,
+      "returned": 40,
+      "rank": 1,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": true,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 3
+    },
+    {
+      "id": "fleetwood-dreams",
+      "tier": "mainstream",
+      "ms": 1032,
+      "error": null,
+      "returned": 40,
+      "rank": 1,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": false,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 11
+    },
+    {
+      "id": "eminem-lose-yourself",
+      "tier": "mainstream",
+      "ms": 1054,
+      "error": null,
+      "returned": 40,
+      "rank": 1,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": true,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 6
+    },
+    {
+      "id": "daft-punk-get-lucky-edit",
+      "tier": "mainstream",
+      "ms": 1007,
+      "error": null,
+      "returned": 40,
+      "rank": 1,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": false,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 5
+    },
+    {
+      "id": "cash-hurt",
+      "tier": "mainstream",
+      "ms": 1045,
+      "error": null,
+      "returned": 40,
+      "rank": 1,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": false,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 9
+    },
+    {
+      "id": "beatles-let-it-be-remaster",
+      "tier": "mainstream",
+      "ms": 1020,
+      "error": null,
+      "returned": 40,
+      "rank": 1,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": false,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 2
+    },
+    {
+      "id": "bts-dynamite",
+      "tier": "international",
+      "ms": 989,
+      "error": null,
+      "returned": 40,
+      "rank": 1,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": false,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 7
+    },
+    {
+      "id": "badbunny-titi",
+      "tier": "international",
+      "ms": 874,
+      "error": null,
+      "returned": 40,
+      "rank": 1,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": true,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 2
+    },
+    {
+      "id": "stromae-alors-on-danse",
+      "tier": "international",
+      "ms": 885,
+      "error": null,
+      "returned": 40,
+      "rank": 1,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": false,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 9
+    },
+    {
+      "id": "utada-first-love",
+      "tier": "international",
+      "ms": 996,
+      "error": null,
+      "returned": 40,
+      "rank": 1,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": false,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 11
+    },
+    {
+      "id": "frahm-says",
+      "tier": "long-tail",
+      "ms": 1075,
+      "error": null,
+      "returned": 40,
+      "rank": 1,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": false,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 0
+    },
+    {
+      "id": "khruangbin-time",
+      "tier": "long-tail",
+      "ms": 998,
+      "error": null,
+      "returned": 40,
+      "rank": 1,
+      "matchType": "MUSIC_VIDEO_TYPE_ATV",
+      "matchExplicit": false,
+      "matchHasAlbum": true,
+      "sameTitleAndDurationTraps": 0
+    }
+  ]
+}

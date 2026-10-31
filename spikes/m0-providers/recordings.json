@@ -1,0 +1,22 @@
+[
+  { "id": "queen-bohemian", "title": "Bohemian Rhapsody", "artists": ["Queen"], "durationS": 355, "variant": "studio", "tier": "mainstream", "isrc": "GBUM71029604" },
+  { "id": "queen-bohemian-liveaid", "title": "Bohemian Rhapsody", "artists": ["Queen"], "durationS": 148, "variant": "live", "tier": "mainstream", "requireWords": ["live"], "query": "Queen Bohemian Rhapsody Live Aid" },
+  { "id": "nirvana-teen-spirit", "title": "Smells Like Teen Spirit", "artists": ["Nirvana"], "durationS": 301, "variant": "studio", "tier": "mainstream" },
+  { "id": "mj-billie-jean", "title": "Billie Jean", "artists": ["Michael Jackson"], "durationS": 294, "variant": "studio", "tier": "mainstream" },
+  { "id": "adele-rolling", "title": "Rolling in the Deep", "artists": ["Adele"], "durationS": 228, "variant": "studio", "tier": "mainstream" },
+  { "id": "kendrick-humble", "title": "HUMBLE.", "artists": ["Kendrick Lamar"], "durationS": 177, "variant": "studio", "tier": "mainstream" },
+  { "id": "swift-shake-it-off", "title": "Shake It Off", "artists": ["Taylor Swift"], "durationS": 219, "variant": "studio", "tier": "mainstream" },
+  { "id": "eilish-bad-guy", "title": "bad guy", "artists": ["Billie Eilish"], "durationS": 194, "variant": "studio", "tier": "mainstream" },
+  { "id": "radiohead-creep", "title": "Creep", "artists": ["Radiohead"], "durationS": 238, "variant": "studio", "tier": "mainstream" },
+  { "id": "fleetwood-dreams", "title": "Dreams", "artists": ["Fleetwood Mac"], "durationS": 257, "variant": "studio", "tier": "mainstream" },
+  { "id": "eminem-lose-yourself", "title": "Lose Yourself", "artists": ["Eminem"], "durationS": 326, "variant": "studio", "tier": "mainstream" },
+  { "id": "daft-punk-get-lucky-edit", "title": "Get Lucky", "artists": ["Daft Punk"], "durationS": 248, "variant": "radio-edit", "tier": "mainstream", "query": "Daft Punk Get Lucky Radio Edit" },
+  { "id": "cash-hurt", "title": "Hurt", "artists": ["Johnny Cash"], "durationS": 218, "variant": "intended-cover", "tier": "mainstream", "note": "A Nine Inch Nails song; Johnny Cash's cover is the target." },
+  { "id": "beatles-let-it-be-remaster", "title": "Let It Be", "artists": ["The Beatles"], "durationS": 243, "variant": "remaster", "tier": "mainstream", "requireWords": ["remaster"], "query": "The Beatles Let It Be Remastered 2009" },
+  { "id": "bts-dynamite", "title": "Dynamite", "artists": ["BTS"], "durationS": 199, "variant": "studio", "tier": "international" },
+  { "id": "badbunny-titi", "title": "Tití Me Preguntó", "artists": ["Bad Bunny"], "durationS": 243, "variant": "studio", "tier": "international" },
+  { "id": "stromae-alors-on-danse", "title": "Alors on danse", "artists": ["Stromae"], "durationS": 206, "variant": "studio", "tier": "international" },
+  { "id": "utada-first-love", "title": "First Love", "artists": ["Hikaru Utada", "Utada Hikaru", "宇多田ヒカル"], "durationS": 257, "variant": "studio", "tier": "international" },
+  { "id": "frahm-says", "title": "Says", "artists": ["Nils Frahm"], "durationS": 498, "variant": "studio", "tier": "long-tail" },
+  { "id": "khruangbin-time", "title": "Time (You and I)", "artists": ["Khruangbin"], "durationS": 342, "variant": "studio", "tier": "long-tail" }
+]

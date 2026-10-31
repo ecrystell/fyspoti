@@ -28,6 +28,14 @@ implementation slice and its validation/review status are recorded in
 | Person 3 | [Accounts and personal data](05-person-3-accounts-library.md) | [Accounts/cloud](10-accounts-and-cloud.md), [library/playlists](11-library-and-playlists.md) |
 | Person 4 | [Catalog, discovery, social](06-person-4-catalog-social.md) | [Catalog/recommendations](13-catalog-and-discovery.md), [social/statistics](14-social-and-statistics.md) |
 
+## M0 results
+
+- [Provider spike](16-provider-spike.md): selected sources, measurements and the YouTube exception that needs team confirmation.
+- [Provider capability matrix](17-provider-capability-matrix.md): what each source can do, and the permitted-content fallback.
+- [Draft shared contracts](../packages/contracts/README.md): proposed catalog schemas, pending P1, P2 and P3 review.
+
+The repository is licensed under [MIT](../LICENSE). Public repository rules are in the spike report.
+
 ## Scope and sequencing
 
 Launch means the launch column below, not the full long-term parity backlog. Advanced features remain assigned so they do not silently disappear.
