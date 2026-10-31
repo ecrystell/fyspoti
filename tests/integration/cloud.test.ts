@@ -86,6 +86,7 @@ describe(`P3 persistence and account isolation (${target})`, () => {
     for (const orderingKey of [20, 0, 10]) {
       items.push(await libraryA.addPlaylistItem(saved.id, { trackId: track.id, orderingKey, metadataSnapshot: track.metadataSnapshot }));
     }
+    saved = await libraryA.getPlaylist(saved.id);
   });
 
   afterAll(async () => {

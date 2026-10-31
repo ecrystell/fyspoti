@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.base.json",
-  "compilerOptions": { "composite": false, "noEmit": true },
+  "compilerOptions": { "composite": false, "noEmit": true, "allowImportingTsExtensions": true, "exactOptionalPropertyTypes": false },
   "include": ["tests/**/*.ts", "vitest*.ts"]
 }

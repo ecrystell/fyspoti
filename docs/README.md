@@ -4,6 +4,9 @@ Drafted 2026-10-31. Documents 01–15 describe the project plans. Person 3's fir
 implementation slice and its validation/review status are recorded in
 [Part 1 setup and handoff](16-person-3-foundation.md).
 
+Person 3's next connected slice is documented in
+[Part 2A library, editing and playback handoff](18-person-3-connected-library.md).
+
 ## Confirmed decisions
 
 - New application, not a Spotube fork.
