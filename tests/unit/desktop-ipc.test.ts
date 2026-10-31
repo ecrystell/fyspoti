@@ -13,6 +13,7 @@ describe('desktop IPC boundary', () => {
     expect(await handlers.get('fyspoti:request-code')!({ ...trusted, senderFrame: { url: frame.url } }, 'a@example.test')).toMatchObject({ ok: false, error: { code: 'FORBIDDEN' } });
     expect(await handlers.get('fyspoti:request-code')!(trusted, 'not-email')).toMatchObject({ ok: false, error: { code: 'INVALID_ARGUMENT' } });
     expect(await handlers.get('fyspoti:sign-out')!(trusted, { anything: true })).toMatchObject({ ok: false, error: { code: 'INVALID_ARGUMENT' } });
+    expect(await handlers.get('fyspoti:import-library')!(trusted, { operation: 'create', expectedAccountId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', title: 'Import', ownerId: 'forged' })).toMatchObject({ ok: false, error: { code: 'INVALID_ARGUMENT' } });
     expect(service.signOut).not.toHaveBeenCalled(); expect(service.requestEmailCode).not.toHaveBeenCalled();
     await handlers.get('fyspoti:request-code')!(trusted, ' Test@Example.test ');
     expect(service.requestEmailCode).toHaveBeenCalledWith('test@example.test');
