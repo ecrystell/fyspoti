@@ -7,7 +7,10 @@ This package covers `Track`, `Album`, `Artist`, `SourceCandidate`, match results
 types and `Library` interface in `src/library.ts`. P2's `PlayableSource` and future
 P3 contracts such as `ListeningEvent` remain separate work. Catalog calls use
 `Result` data; the current library adapter rejects with `LibraryError`. Unifying
-those error boundaries and catalog IDs still needs affected-owner review.
+those error boundaries and catalog IDs is covered by the new Part 2A `LibraryApi`
+Result facade and opaque track IDs. The original throwing `Library` adapter remains
+for compatibility. These changes still need affected-owner review; see
+[Part 2A](../../docs/18-person-3-connected-library.md#affected-owner-review-request).
 
 ```sh
 # From the repository root:

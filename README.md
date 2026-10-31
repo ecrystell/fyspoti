@@ -46,6 +46,9 @@ silently skip. `npm run cloud:stop` stops the local stack when finished.
 
 See [Person 3 setup and handoff](docs/16-person-3-foundation.md) for the API contract,
 hosted development validation, ownership boundaries, and acceptance status.
+See [Part 2A](docs/18-person-3-connected-library.md) for likes, revision-safe editing,
+account-scoped state and the queue connection to P2. `npm run test:migrations`
+checks upgrading populated Part 1 data in a disposable local database.
 
 ## Packages
 

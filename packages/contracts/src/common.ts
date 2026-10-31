@@ -8,6 +8,9 @@ export const ErrorCode = z.enum([
   'CONFLICT',
   'DISK_FULL',
   'CANCELLED',
+  'INVALID_ARGUMENT',
+  'NOT_FOUND',
+  'FORBIDDEN',
 ]);
 export type ErrorCode = z.infer<typeof ErrorCode>;
 
