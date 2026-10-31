@@ -37,6 +37,7 @@ contextBridge.exposeInMainWorld('desktop', {
     retryUncertain: () => ipcRenderer.invoke('fyspoti:retry-uncertain'),
     prepareQueue: id => ipcRenderer.invoke('fyspoti:prepare-queue', id),
     prepareLikedQueue: () => ipcRenderer.invoke('fyspoti:prepare-liked-queue'),
+    importLibrary: request => ipcRenderer.invoke('fyspoti:import-library', request),
     getTrackLike: id => ipcRenderer.invoke('fyspoti:get-like', id),
     subscribe(listener) {
       const handler = (_event: Electron.IpcRendererEvent, state: import('@fyspoti/contracts').DesktopState) => listener(state);

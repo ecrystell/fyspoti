@@ -89,6 +89,19 @@ async function serviceFixture() {
   return { ...item, service, fetcher, make, likes: (rows: typeof likedRows) => { likedRows = rows; }, denyLibrary: () => { libraryDenied = true; }, clock: (value: number) => { now = value; }, failCode: () => { verifyStatus = 403; }, failUser: (status: number) => { userStatus = status; }, failRevoke: () => { revokeFails = true; }, delay: (promise: Promise<Response>) => { delayed = promise; } };
 }
 describe('passwordless account lifecycle', () => {
+  it('rejects signed-out and mismatched-owner import operations before touching the cloud', async () => {
+    const item = await serviceFixture();
+    const request = { operation: 'create' as const, expectedAccountId: user.id, title: 'Imported' };
+    expect((await item.service.importLibrary(request)).ok).toBe(false);
+    await item.service.requestEmailCode(user.email); await item.service.verifyEmailCode(user.email, '123456');
+    const before = item.fetcher.mock.calls.length;
+    expect((await item.service.importLibrary({ ...request, expectedAccountId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb' })).ok).toBe(false);
+    expect(item.fetcher.mock.calls.length).toBe(before);
+    expect(await item.service.importLibrary({ operation: 'playlists', expectedAccountId: user.id })).toEqual({ ok: true, value: { items: [], nextCursor: null } });
+    await item.service.signOut();
+    expect((await item.service.importLibrary(request)).ok).toBe(false);
+  });
+
   it('prepares all Liked Songs pages with stable queue IDs and saved metadata', async () => {
     const item = await serviceFixture(); await item.service.requestEmailCode(user.email); await item.service.verifyEmailCode(user.email, '123456');
     const rows = Array.from({ length: 61 }, (_, i) => ({ id: `10000000-0000-4000-8000-${String(i).padStart(12, '0')}`, owner_id: user.id, track_id: `saved-fixture-${i}`, liked: true, revision: 1, snapshot_title: `Saved ${i}`, snapshot_artist_names: ['First', 'Second'], snapshot_duration_ms: i === 60 ? 0 : 214000 }));

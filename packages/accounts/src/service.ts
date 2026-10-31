@@ -1,6 +1,6 @@
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js';
-import { DesktopSchemas, type AccountState, type AppError, type DesktopState, type LibraryAction, type LibraryQueueItem, type MutationContext, type Profile, type Result } from '@fyspoti/contracts';
-import { createLibraryApi, LibraryController, preparePlaylistQueue, type Database } from '@fyspoti/library';
+import { DesktopSchemas, LibraryError, type AccountState, type AppError, type DesktopState, type ImportLibraryRequest, type ImportLibraryValue, type LibraryAction, type LibraryQueueItem, type MutationContext, type Profile, type Result } from '@fyspoti/contracts';
+import { createLibrary, createLibraryApi, LibraryController, preparePlaylistQueue, type Database } from '@fyspoti/library';
 import { SessionVault, type AuthStorage } from './vault.js';
 
 export function accountFailure(error: unknown, codeAttempt = false): AppError {
@@ -248,6 +248,22 @@ export class AccountService {
       if (cursor) cursors.add(cursor);
     } while (cursor);
     return { ok: true, value: items };
+  }
+  async importLibrary(request: ImportLibraryRequest): Promise<Result<ImportLibraryValue>> {
+    const parsed = DesktopSchemas.importLibrary.safeParse(request);
+    if (!parsed.success) return invalid('Invalid import library request.');
+    if (this.auth.phase !== 'authenticated' || parsed.data.expectedAccountId !== this.auth.userId) return this.stale();
+    const epoch = this.epoch; const library = createLibrary(this.client); const input = parsed.data;
+    try {
+      const value = input.operation === 'create' ? await library.createPlaylist(input.title)
+        : input.operation === 'append' ? await library.addPlaylistItem(input.playlistId, input.item)
+        : input.operation === 'playlists' ? await library.listPlaylists(input.cursor)
+        : input.operation === 'playlist' ? await library.getPlaylist(input.playlistId)
+        : await library.listPlaylistItems(input.playlistId, input.cursor);
+      return this.checked({ ok: true, value }, epoch);
+    } catch (error) {
+      return this.checked({ ok: false, error: error instanceof LibraryError ? { code: error.code, message: error.message, retryable: error.retryable } : accountFailure(error) }, epoch);
+    }
   }
   async getTrackLike(trackId: string) {
     if (this.auth.phase !== 'authenticated' || !this.auth.userId) return this.stale();

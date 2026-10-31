@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { Track } from './catalog.ts';
-import type { AppError, Result } from './common.ts';
-import type { LibraryAction, LibraryQueue, LibraryQueueItem, LibraryViewState, MutationContext, TrackLike } from './library.ts';
+import type { AppError, Page, Result } from './common.ts';
+import type { LibraryAction, LibraryQueue, LibraryQueueItem, LibraryViewState, MutationContext, Playlist, PlaylistItem, TrackLike } from './library.ts';
 
 export interface Profile { id: string; displayName: string; revision: number }
 export interface AccountState {
@@ -30,6 +30,7 @@ export interface CloudBridge {
   retryUncertain(): Promise<Result<unknown>>;
   prepareQueue(playlistId: string): Promise<Result<LibraryQueue>>;
   prepareLikedQueue(): Promise<Result<LibraryQueueItem[]>>;
+  importLibrary(request: ImportLibraryRequest): Promise<Result<ImportLibraryValue>>;
   getTrackLike(trackId: string): Promise<Result<TrackLike>>;
   subscribe(listener: (state: DesktopState) => void): () => void;
 }
@@ -45,7 +46,17 @@ export const LibraryActionSchema: z.ZodType<LibraryAction> = z.discriminatedUnio
   z.strictObject({ type: z.literal('reorder'), playlistId: id, itemIds: z.array(id).max(10000) }),
   z.strictObject({ type: z.literal('delete'), playlistId: id }),
 ]);
+export const ImportLibraryRequestSchema = z.discriminatedUnion('operation', [
+  z.strictObject({ operation: z.literal('create'), expectedAccountId: id, title: z.string().trim().min(1).max(200) }),
+  z.strictObject({ operation: z.literal('append'), expectedAccountId: id, playlistId: id, item: z.strictObject({ trackId: z.string().min(1).max(256), orderingKey: z.number().int().min(0).max(2147483647), metadataSnapshot: snapshot }) }),
+  z.strictObject({ operation: z.literal('playlists'), expectedAccountId: id, cursor: z.string().max(4096).optional() }),
+  z.strictObject({ operation: z.literal('playlist'), expectedAccountId: id, playlistId: id }),
+  z.strictObject({ operation: z.literal('items'), expectedAccountId: id, playlistId: id, cursor: z.string().max(4096).optional() }),
+]);
+export type ImportLibraryRequest = z.infer<typeof ImportLibraryRequestSchema>;
+export type ImportLibraryValue = Playlist | PlaylistItem | Page<Playlist> | Page<PlaylistItem>;
 export const DesktopSchemas = {
+  importLibrary: ImportLibraryRequestSchema,
   email: z.string().trim().toLowerCase().max(254).pipe(z.email()),
   verify: z.strictObject({ email: z.string().trim().toLowerCase().max(254).pipe(z.email()), code: z.string().regex(/^\d{6}$/) }),
   profile: z.strictObject({ displayName: z.string().trim().min(1).max(80), context: z.strictObject({ mutationId: id, expectedRevision: z.number().int().positive() }) }),
