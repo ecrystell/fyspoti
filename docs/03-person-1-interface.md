@@ -42,3 +42,27 @@ P2/P3/P4 implement feature-specific panels using these components. P1 does not o
 Implement the album page using the approved baseline and fixture schema. Reuse TrackTable; wire play/save through injected contracts. Include loading and unavailable states. Do not change player, authentication or provider code. Return screenshots and relevant check results.
 
 References: [UI plan](07-ui-rebuild.md), [Spotube reference boundaries](02-upstream-references.md).
+
+## Implementation tracking
+
+See [page and feature implementation log](16-person-1-implementation.md) and [verification](17-person-1-verification.md).
+
+## REA evidence pass
+
+See [Spotify static investigation and reconstruction ledger](18-spotify-rea-investigation.md). Runtime frame equivalence remains unresolved; UI changes are linked to static evidence and screenshots.
+
+
+## Live web comparison
+
+See [measured web reference and implemented improvements](19-spotify-web-comparison.md).
+
+
+## Packaged components and motion
+
+See [deeper source analysis, implemented controls and motion verification](20-ui-components-and-motion.md).
+
+
+## Queue and Connect correction
+
+See [queue/sidebar rebuild and menu audit](21-queue-connect-menu-audit.md).
+
