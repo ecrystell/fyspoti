@@ -37,7 +37,7 @@ Vite compiled JSX in classic `React.createElement` mode because it does not read
 
 - **Playing from a list** queues the chosen track and the rest of the visible list after it, in the displayed order. P2 then owns order, repeat and shuffle.
 - **Add to queue** uses P2's `enqueue`, which places the item next. Several additions therefore play newest-first.
-- **Remove from queue / Clear queue** say they await P2. `Player` has no removal command, and P1 must not keep a shadow queue.
+- **Remove from queue / Clear queue** call P2’s `removeUpcoming` (added in the P2 merge `41d60ee`; verified live: 9 → 8 rows).
 - **Cloud playlists are read and append only.** P3 M0 has no rename, delete, reorder, remove, cover or description. Those actions explain this instead of editing a copy. Items not in the loaded catalog render from their metadata snapshots, and unknown durations (0) show as `–:––`.
 - **Cloud sessions are in memory.** Restarting requires signing in again, as documented by P3.
 - **Imported tracks do not play.** They have no audio match yet, so playing one reports that no audio source is connected.
@@ -51,7 +51,7 @@ Vite compiled JSX in classic `React.createElement` mode because it does not read
 
 - Review the one-line change in `p2/src/player.ts`: the final `else` in `onAudio` is now `else if (event.type === 'error')`. Behavior is identical. TypeScript could not narrow `event.message` in a trailing `else`, which failed the frontend typecheck now that it includes the player.
 - Use `globalThis.crypto.randomUUID` instead of importing `node:crypto` in `player.ts`, so the renderer shim can be removed.
-- Add `remove(itemId)` and `clearUpcoming()` (or similar) for Queue remove/clear.
+- ~~Queue remove/clear command~~: delivered as `removeUpcoming`.
 - Consider appending manual `enqueue` items after earlier manual items, Spotify-style.
 - `p2/package.json` pins Electron 45.1.0, while the app runs the root 45.2.1.
 
@@ -62,3 +62,10 @@ Vite compiled JSX in classic `React.createElement` mode because it does not read
 ## Verification
 
 See [verification](17-person-1-verification.md#team-integration-pass).
+
+## After the P2 desktop-playback merge (41d60ee)
+
+Desktop playback and downloads now resolve through P2’s YouTube worker (`p2/.venv`, created by `p2/setup.ps1`). Without that environment every desktop track fails to play with a raw IPC `spawn … python.exe ENOENT` toast; there is no fallback to previews. The browser (`npm run dev`) view still uses previews.
+
+
+Errors and their status: [24-person-1-error-log.md](24-person-1-error-log.md).

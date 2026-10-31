@@ -76,3 +76,8 @@ See [P2/P3/P4 integration, behavior changes and requests to other owners](22-per
 ## Context menus
 
 See [desktop-derived track and playlist menus](23-context-menus.md).
+
+
+## Error log
+
+See [errors seen during integration, causes and status](24-person-1-error-log.md).

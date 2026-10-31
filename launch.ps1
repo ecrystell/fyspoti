@@ -22,4 +22,8 @@ foreach ($entry in 'main', 'preload') {
 }
 # VS Code terminals set this, which makes electron.exe start as plain Node.
 Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue
+# P2's worker runs yt-dlp with a Node runtime and verifies downloads with ffprobe; both must
+# be on Electron's PATH. Reread the saved PATH so tools installed after this shell opened count.
+$env:Path = (Split-Path -Parent $nodeRuntime) + ';' + [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
+if (-not (Get-Command ffprobe -ErrorAction SilentlyContinue)) { Write-Warning 'ffprobe was not found; downloads will fail verification. Install FFmpeg (winget install Gyan.FFmpeg).' }
 if (-not $BuildOnly) { & '.\node_modules\electron\dist\electron.exe' . }

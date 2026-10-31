@@ -50,3 +50,25 @@ Blocked or not verified:
 ## Context menus pass
 
 2026-10-31. Live Electron checks of the track/playlist menus and submenu keyboard path passed; 53 unit tests passed. Details and unverified cases in [23-context-menus.md](23-context-menus.md#verification).
+
+
+## P2 desktop playback pass
+
+2026-10-31, after merge `41d60ee`. Setup: `p2/setup.ps1` (venv with yt-dlp 2026.10.26, yt-dlp-ejs 0.8.0, ytmusicapi 1.12.1) and FFmpeg 9.0.2 via `winget install Gyan.FFmpeg`. `launch.ps1` now puts the Node runtime and a fresh machine and user PATH on Electron's PATH, because the worker runs `yt-dlp --js-runtimes node` and `ffprobe`.
+
+Passed:
+
+- The P2 resolver, called directly, matched "The Great Pumpkin Waltz" to a YouTube Music video in about 7 seconds and returned an `audio/mp4` stream.
+- Download: `downloadTrack` completed in 13 seconds on the first attempt, producing a 2.5 MB `audio/mp4` artifact that passed FFprobe. The "Download complete" toast appeared.
+- The downloaded track played full-length in the app (0:01 → 0:05 of 2:36).
+- Remove from queue and Clear queue work through `removeUpcoming`.
+
+Fixed: queue items had no `durationMs`, so P2's adapter assumed 180000 ms and P4's matcher rejected real tracks with `NO_MATCH`. `itemFor` now passes the catalog duration.
+
+Open:
+
+- **A track that is not downloaded resolves but does not play.** "End Game" got a match and a 4:05 duration, then the audio element reported "no supported source was found." Investigating the stream URL further was blocked by the session's safety policy and not pursued. P2 should check whether the resolved URL can be played directly by Chromium.
+- Playback errors are still raw IPC text ("Error invoking remote method 'p2:resolve-stream': …").
+
+
+All errors from these passes, with exact messages and status, are in [24-person-1-error-log.md](24-person-1-error-log.md).

@@ -78,3 +78,8 @@ Replaced the renderer stand-ins with teammate modules: shared contract tracks wi
 ## Context menus
 
 Track menu now uses an **Add to playlist ▸** submenu (Find a playlist filter, New playlist, scrolling list) instead of listing every playlist inline. The playlist menu follows the desktop composition order. Evidence and limits: [23-context-menus.md](23-context-menus.md).
+
+
+## Error log
+
+Open and fixed integration errors: [24-person-1-error-log.md](24-person-1-error-log.md).
