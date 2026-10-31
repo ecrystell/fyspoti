@@ -1,8 +1,16 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import '../p2/src/electron-preload.ts';
 import type { CloudBridge } from '@fyspoti/contracts';
+import type { CatalogBridge } from '../src/services/desktop-catalog.ts';
 contextBridge.exposeInMainWorld('desktop', {
   windowAction(action: string) { if (['minimize', 'maximize', 'close'].includes(action)) ipcRenderer.send('window-action', action); },
+  catalog: {
+    search: (query, cursor) => ipcRenderer.invoke('catalog:search', query, cursor),
+    getTrack: id => ipcRenderer.invoke('catalog:get-track', id),
+    getAlbum: id => ipcRenderer.invoke('catalog:get-album', id),
+    getArtist: id => ipcRenderer.invoke('catalog:get-artist', id),
+    findCandidates: (id, hint) => ipcRenderer.invoke('catalog:find-candidates', id, hint),
+  } satisfies CatalogBridge,
   cloud: {
     getState: () => ipcRenderer.invoke('fyspoti:state'),
     requestEmailCode: email => ipcRenderer.invoke('fyspoti:request-code', email),

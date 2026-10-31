@@ -3,6 +3,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { installP2Desktop, registerP2MediaScheme } from '../p2/src/electron-main.ts';
 import type { WorkerPaths } from '../p2/src/download-manager.ts';
+import { installCatalog } from './catalog.ts';
 
 registerP2MediaScheme();
 if (process.env.FYSPOTI_USER_DATA) app.setPath('userData', path.resolve(process.env.FYSPOTI_USER_DATA));
@@ -41,6 +42,11 @@ app.whenReady().then(async () => {
   });
   // The renderer falls back to its own player if these handlers are missing.
   try { await installP2Desktop(window, worker, path.join(appRoot, 'p2', 'worker', 'youtube_source.py')); } catch (error) { console.error('P2 desktop services failed to start', error); }
+  // P4's catalog worker needs only ytmusicapi, which P2's environment already pins at the same version.
+  try {
+    const catalog = installCatalog({ ipcMain, window, appUrl, python: env('FYSPOTI_CATALOG_PYTHON') || worker.python, workerPath: path.join(appRoot, 'services', 'catalog-worker', 'worker.py') });
+    app.on('will-quit', () => catalog.close());
+  } catch (error) { console.error('P4 catalog failed to start', error); }
   // P3's session service stays in the main process alongside P2's services.
   const accountModule = await import(pathToFileURL(path.join(appRoot, 'electron/accounts.mjs')).href);
   accounts = await accountModule.installAccounts({ app, ipcMain, safeStorage, window, appUrl });

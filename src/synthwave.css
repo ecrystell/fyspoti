@@ -1,0 +1,111 @@
+/* Fyspoti synthwave theme. Visual layer only: colours, type, light and surfaces. Layout,
+   sizes that affect hit targets, and behaviour stay in the base stylesheets.
+   Every rule is scoped to html.synthwave, which only P1's App sets. P3's CloudApp reuses
+   the same class names and loads these files, so unscoped rules would restyle it.
+   Fonts: Orbitron and Exo 2, SIL Open Font License 1.1 (see src/fonts/*-OFL.txt). */
+@font-face{font-family:'Orbitron';src:url('./fonts/Orbitron-Variable.ttf') format('truetype');font-weight:400 900;font-display:swap}
+@font-face{font-family:'Exo 2';src:url('./fonts/Exo2-Variable.ttf') format('truetype');font-weight:100 900;font-display:swap}
+
+html.synthwave{
+ --sw-night:#0b0420;--sw-panel:#140a2ee6;--sw-raised:#1f1045;--sw-hover:#2b1660;--sw-press:#3a1d7a;
+ --sw-pink:#ff2bd6;--sw-violet:#8b5cf6;--sw-cyan:#29f0ff;--sw-orange:#ff8a3d;--sw-yellow:#ffd23f;
+ --sw-text:#f5ecff;--sw-muted:#b9a8e3;--sw-dim:#7f6ba9;--sw-edge:#ff2bd640;--sw-edge-soft:#8b5cf633;
+ --sw-sunset:linear-gradient(180deg,#ffd23f 0%,#ff8a3d 32%,#ff2bd6 68%,#8b5cf6 100%);
+ --sw-neon:linear-gradient(90deg,#ff2bd6 0%,#8b5cf6 55%,#29f0ff 100%);
+ --sw-play:linear-gradient(135deg,#ffd23f 0%,#ff8a3d 35%,#ff2bd6 100%);
+ --sw-display:'Orbitron','Exo 2','Segoe UI',sans-serif;--sw-body:'Exo 2','Segoe UI',Arial,sans-serif;
+ /* Base tokens the existing stylesheets read. */
+ --surface:#140a2e;--elevated:#1f1045;--highlight:#2b1660;--subdued:var(--sw-muted);--accent:var(--sw-cyan);
+ color-scheme:dark;scrollbar-color:var(--sw-violet) transparent;
+}
+html.synthwave ::selection{background:var(--sw-pink);color:#12052b}
+
+/* Night sky with a neon horizon grid, behind every panel. */
+html.synthwave body{font-family:var(--sw-body);color:var(--sw-text);background:radial-gradient(120% 60% at 50% 115%,#ff2bd655 0%,#8b5cf622 35%,transparent 65%),radial-gradient(80% 50% at 50% -10%,#29f0ff1f 0%,transparent 60%),linear-gradient(180deg,#07021a 0%,#0b0420 45%,#1a0638 100%) fixed}
+html.synthwave body::before{content:'';position:fixed;left:-50%;right:-50%;bottom:-2px;height:46vh;z-index:-1;pointer-events:none;background-image:linear-gradient(var(--sw-pink) 1px,transparent 1px),linear-gradient(90deg,var(--sw-pink) 1px,transparent 1px);background-size:56px 56px;opacity:.28;transform:perspective(380px) rotateX(62deg);transform-origin:bottom;-webkit-mask-image:linear-gradient(transparent 0%,#000 70%);mask-image:linear-gradient(transparent 0%,#000 70%)}
+html.synthwave button,html.synthwave input,html.synthwave select,html.synthwave textarea{font-family:inherit}
+html.synthwave :focus-visible{outline:2px solid var(--sw-cyan)!important;outline-offset:2px}
+
+/* Type: chrome-sunset display headings, neon section labels. */
+html.synthwave h1,html.synthwave h2,html.synthwave h3,html.synthwave .small-heading,html.synthwave .library-title b,html.synthwave .panel-title b,html.synthwave .panel-title h2,html.synthwave .now-title h2{font-family:var(--sw-display);letter-spacing:.03em}
+html.synthwave .hero h1,html.synthwave .small-heading{font-weight:800;letter-spacing:.02em;background:var(--sw-sunset);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 18px #ff2bd666)}
+html.synthwave .hero h1{font-size:clamp(34px,4.8vw,80px);line-height:1.12}
+html.synthwave .hero h1.long-title{font-size:clamp(26px,3vw,48px)}
+html.synthwave .page-body h2,html.synthwave .content section>h2,html.synthwave .queue-panel-body h2{color:var(--sw-text);text-shadow:0 0 12px #8b5cf699}
+html.synthwave p,html.synthwave .library-item span,html.synthwave .card span,html.synthwave .song span,html.synthwave .timeline,html.synthwave .hero span,html.synthwave .hero p,html.synthwave .current-track span,html.synthwave .th{color:var(--sw-muted)}
+html.synthwave .hero b,html.synthwave .card strong,html.synthwave .song strong,html.synthwave .library-item b,html.synthwave .current-track b{color:var(--sw-text)}
+html.synthwave .th{font-family:var(--sw-display);font-size:11px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+html.synthwave .dedicated-panel>.panel-title{background:#160b33;border-bottom:1px solid var(--sw-edge-soft)}
+
+/* Shell: glassy panels with a magenta edge and violet glow. */
+html.synthwave header{background:transparent}
+html.synthwave .library,html.synthwave .content,html.synthwave .right-panel{background:var(--sw-panel);border:1px solid var(--sw-edge);border-radius:14px;box-shadow:0 0 0 1px #ffffff08 inset,0 0 28px #8b5cf626;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+html.synthwave .content.red{background:linear-gradient(180deg,#4a1470 0%,#2a0d55 220px,var(--sw-panel) 420px)}
+html.synthwave .panel-resize:hover,html.synthwave .panel-resize:focus-visible{background:var(--sw-neon)}
+html.synthwave footer{background:linear-gradient(180deg,#0b0420f2,#07021af2);border-top:1px solid transparent;border-image:var(--sw-neon) 1}
+
+/* Controls. */
+html.synthwave .icon{color:var(--sw-muted)}
+html.synthwave .icon:hover{color:var(--sw-cyan);filter:drop-shadow(0 0 6px #29f0ff99)}
+html.synthwave .active{filter:drop-shadow(0 0 6px #29f0ffaa)}
+html.synthwave .transport .icon.active:after,html.synthwave .player-extras .icon.active:after{background:var(--sw-cyan);box-shadow:0 0 6px var(--sw-cyan)}
+html.synthwave .searchbar label,html.synthwave .searchbar>.icon{background:var(--sw-raised);border:1px solid var(--sw-edge-soft);color:var(--sw-muted)}
+html.synthwave .searchbar label:focus-within{border-color:var(--sw-cyan);box-shadow:0 0 0 1px var(--sw-cyan),0 0 16px #29f0ff55}
+html.synthwave .searchbar input,html.synthwave .lib-tools input{color:var(--sw-text)}
+html.synthwave .searchbar input::placeholder{color:var(--sw-dim)}
+html.synthwave .avatar{box-shadow:0 0 0 2px var(--sw-pink),0 0 12px #ff2bd677}
+html.synthwave .chips button,html.synthwave .pill{background:transparent;border:1px solid var(--sw-violet);color:var(--sw-text);font-family:var(--sw-display);font-size:12px;letter-spacing:.06em}
+html.synthwave .chips button:hover,html.synthwave .pill:hover{border-color:var(--sw-pink);box-shadow:0 0 12px #ff2bd655}
+html.synthwave .chips .chosen{background:var(--sw-neon);border-color:transparent;color:#12052b;font-weight:700}
+html.synthwave .lib-tools select,html.synthwave select{background:var(--sw-raised);color:var(--sw-text);border-color:var(--sw-edge-soft)}
+html.synthwave input[type=range]{accent-color:var(--sw-pink)}
+html.synthwave input[type=range]:hover{accent-color:var(--sw-cyan)}
+
+/* Play buttons: sunset disc with a neon halo. Icons stay black for contrast. */
+html.synthwave .green-play,html.synthwave .floating,html.synthwave .white-play{background:var(--sw-play);box-shadow:0 0 0 1px #ffffff33 inset,0 6px 22px #ff2bd666}
+html.synthwave .green-play:hover,html.synthwave .floating:hover,html.synthwave .white-play:hover{box-shadow:0 0 0 1px #ffffff55 inset,0 0 28px #ff2bd6aa}
+html.synthwave .save{background:var(--sw-play);color:#12052b;font-family:var(--sw-display);letter-spacing:.06em}
+html.synthwave .save:hover{box-shadow:0 0 22px #ff2bd699}
+
+/* Library, cards and lists. */
+html.synthwave .library-item:hover{background:var(--sw-hover)}
+html.synthwave .library-item.selected,html.synthwave .library-item:hover.selected{background:linear-gradient(90deg,#ff2bd633,var(--sw-hover) 60%);box-shadow:inset 3px 0 0 var(--sw-pink)}
+html.synthwave .library-item span svg{color:var(--sw-cyan);fill:var(--sw-cyan);stroke:var(--sw-cyan)}
+html.synthwave .liked-cover,html.synthwave .hero-liked{background:var(--sw-sunset);color:#12052b}
+html.synthwave .quick-grid button{background:#ffffff0d;border:1px solid var(--sw-edge-soft)}
+html.synthwave .quick-grid button:hover{background:var(--sw-hover);border-color:var(--sw-pink);box-shadow:0 0 16px #ff2bd640}
+html.synthwave .card{background:#ffffff08;border:1px solid transparent}
+html.synthwave .card:hover{background:var(--sw-raised);border-color:var(--sw-edge);box-shadow:0 0 20px #8b5cf640}
+html.synthwave .cover img,html.synthwave .hero>img,html.synthwave .now-cover{box-shadow:0 8px 30px #000a,0 0 24px #ff2bd633}
+html.synthwave .art-placeholder{background:var(--sw-raised);color:var(--sw-violet)}
+html.synthwave .tr:hover:not(.th){background:var(--sw-hover)}
+html.synthwave .tr.selected{background:var(--sw-press)}
+html.synthwave .song strong.active{color:var(--sw-cyan)!important;text-shadow:0 0 10px #29f0ff88}
+html.synthwave .song span:hover,html.synthwave .album-link:hover,html.synthwave .artist-link:hover{color:var(--sw-pink)}
+html.synthwave .artist-card{background:var(--sw-raised);border:1px solid var(--sw-edge-soft)}
+
+/* Right-panel views. */
+html.synthwave .queue-current .queue-track-title{color:var(--sw-cyan);text-shadow:0 0 10px #29f0ff88}
+html.synthwave .spotify-queue-row:hover,html.synthwave .queue-selected{background:var(--sw-hover)}
+html.synthwave .connect-current{background:var(--sw-raised);color:var(--sw-cyan);border:1px solid var(--sw-edge-soft)}
+html.synthwave .connect-links a{color:var(--sw-text)}
+
+/* Overlays: menus, submenus, dialogs, toasts, notices. */
+html.synthwave .menu,html.synthwave .submenu,html.synthwave .dialog{background:#1a0d3cf7;border:1px solid var(--sw-edge);box-shadow:0 0 0 1px #ffffff0a inset,0 18px 50px #000c,0 0 30px #8b5cf640}
+html.synthwave .menu button:hover,html.synthwave .submenu button:hover,html.synthwave .submenu button:focus-visible,html.synthwave .menu button:focus-visible,html.synthwave .menu .submenu-trigger[data-context-menu-open=true]{background:var(--sw-hover)}
+html.synthwave .menu button[aria-checked=true]{color:var(--sw-cyan)}
+html.synthwave .menu-divider,html.synthwave .submenu-divider{background:var(--sw-edge-soft)}
+html.synthwave .submenu-filter,html.synthwave .dialog input,html.synthwave .dialog textarea{background:var(--sw-raised);color:var(--sw-text);border:1px solid var(--sw-edge-soft)}
+html.synthwave .submenu-filter:focus-within,html.synthwave .dialog input:focus,html.synthwave .dialog textarea:focus{border-color:var(--sw-cyan);outline:0;box-shadow:0 0 12px #29f0ff44}
+html.synthwave .overlay{background:#07021acc}
+html.synthwave .toast{background:var(--sw-raised);color:var(--sw-text);border:1px solid var(--sw-cyan);box-shadow:0 0 22px #29f0ff55}
+html.synthwave .notice{background:#29f0ff12;color:var(--sw-text);border-left:3px solid var(--sw-cyan)}
+html.synthwave .skeleton{color:var(--sw-muted)}
+
+/* Import screen. */
+html.synthwave .import-stats b{font-family:var(--sw-display);background:var(--sw-neon);-webkit-background-clip:text;background-clip:text;color:transparent}
+html.synthwave .import-entry{background:#ffffff0a;border:1px solid var(--sw-edge-soft)}
+html.synthwave .import-entry input{accent-color:var(--sw-pink)}
+html.synthwave .import-outcome.complete{color:var(--sw-cyan)}
+html.synthwave .import-error,html.synthwave .import-outcome.interrupted,html.synthwave .import-outcome.failed{color:#ff6b9d}
+

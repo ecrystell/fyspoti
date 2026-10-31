@@ -17,3 +17,5 @@
 .submenu-list button span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .submenu-list small{flex-shrink:0;color:#b3b3b3;font-size:12px}
 .submenu .submenu-empty{padding:8px 12px;color:#b3b3b3;font-size:13px}
+/* Long catalog titles shrink and wrap to two lines instead of truncating at display size. */
+.hero h1.long-title{font-size:clamp(32px,3.6vw,56px);letter-spacing:-1.5px;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
