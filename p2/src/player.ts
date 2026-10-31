@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import type { AudioEngine, AudioEvent, ListeningEvent, PlayerState, QueueItem, RepeatMode, SourceResolver } from './contracts.ts';
 
 type Listener = (state: PlayerState) => void;
@@ -52,6 +51,12 @@ export class Player {
   reorderQueue(ids: string[]): void {
     if (ids.length !== this.upcoming.length || new Set(ids).size !== ids.length || ids.some(id => !this.upcoming.includes(id))) throw new Error('Invalid upcoming order');
     this.upcoming = [...ids];
+    this.update({});
+  }
+
+  removeUpcoming(ids: string[]): void {
+    const removed = new Set(ids);
+    this.upcoming = this.upcoming.filter(id => !removed.has(id));
     this.update({});
   }
 
@@ -147,6 +152,6 @@ export class Player {
     if (positionMs !== undefined) this.lastPositionMs = positionMs;
     this.lastClock = now;
   }
-  private finishListening(): void { this.accountTime(); const item = this.state.queue.find(q => q.id === this.state.currentItemId); if (item && this.listenedMs > 0) this.emitListening({ id: randomUUID(), trackId: item.trackId, queueItemId: item.id, listenedMs: this.listenedMs, startedAt: this.startedAt, endedAt: Date.now(), privacyEligible: this.eligible }); this.listenedMs = 0; this.lastClock = 0; }
+  private finishListening(): void { this.accountTime(); const item = this.state.queue.find(q => q.id === this.state.currentItemId); if (item && this.listenedMs > 0) this.emitListening({ id: crypto.randomUUID(), trackId: item.trackId, queueItemId: item.id, listenedMs: this.listenedMs, startedAt: this.startedAt, endedAt: Date.now(), privacyEligible: this.eligible }); this.listenedMs = 0; this.lastClock = 0; }
   private validateQueue(items: QueueItem[]): void { if (new Set(items.map(i => i.id)).size !== items.length || items.some(i => !i.id || !i.trackId)) throw new Error('Invalid queue'); }
 }

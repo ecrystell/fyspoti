@@ -1,6 +1,8 @@
-const { contextBridge, ipcRenderer } = require('electron');
+import { contextBridge, ipcRenderer } from 'electron';
+import '../p2/src/electron-preload.ts';
+import type { CloudBridge } from '@fyspoti/contracts';
 contextBridge.exposeInMainWorld('desktop', {
-  windowAction(action) { if (['minimize', 'maximize', 'close'].includes(action)) ipcRenderer.send('window-action', action); },
+  windowAction(action: string) { if (['minimize', 'maximize', 'close'].includes(action)) ipcRenderer.send('window-action', action); },
   cloud: {
     getState: () => ipcRenderer.invoke('fyspoti:state'),
     requestEmailCode: email => ipcRenderer.invoke('fyspoti:request-code', email),
@@ -17,9 +19,9 @@ contextBridge.exposeInMainWorld('desktop', {
     prepareQueue: id => ipcRenderer.invoke('fyspoti:prepare-queue', id),
     getTrackLike: id => ipcRenderer.invoke('fyspoti:get-like', id),
     subscribe(listener) {
-      const handler = (_event, state) => listener(state);
+      const handler = (_event: Electron.IpcRendererEvent, state: import('@fyspoti/contracts').DesktopState) => listener(state);
       ipcRenderer.on('fyspoti:state', handler);
       return () => ipcRenderer.removeListener('fyspoti:state', handler);
     },
-  },
+  } satisfies CloudBridge,
 });

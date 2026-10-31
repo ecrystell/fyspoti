@@ -5,6 +5,12 @@ library. Browser development (`npm run dev`) retains P1's separate prototype.
 Existing `fy-*` localStorage playlists, likes and profile data are neither displayed
 as cloud data nor imported. A new account starts with an empty library.
 
+After merging the shared shell, `electron/main.ts` and `electron/preload.ts` build
+to `dist-electron/` and install both P2 and P3 bridges. P1/P2's local playback
+prototype remains available by building with `VITE_FYSPOTI_DESKTOP_MODE=prototype`.
+The default account UI continues using ephemeral previews; connecting its private
+queues to P2's device-wide persistence still requires account-scoped storage.
+
 ## Run locally
 
 Use Node 24, the pinned npm dependencies, Docker Desktop (Linux containers), and

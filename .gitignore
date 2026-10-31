@@ -1,5 +1,6 @@
 node_modules/
 dist/
+electron/p2-main.cjs
 *.log
 work/
 coverage/
@@ -12,3 +13,4 @@ services/cloud/supabase/.temp/
 services/cloud/supabase/.branches/
 __pycache__/
 .venv/
+dist-electron/

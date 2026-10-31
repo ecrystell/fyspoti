@@ -24,6 +24,7 @@ export const MatchSignal = z.enum([
   'version-match',
   'version-mismatch',
   'official-audio',
+  'source-ref', // The track came from this source, so identity needed no search.
   'manual-override',
   'no-results',
 ]);

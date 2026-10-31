@@ -35,6 +35,7 @@ test('local email → cloud library → encrypted restart → account isolation'
     await page.waitForURL('**/dist/index.html');
     await page.reload();
     await expect(page.getByRole('heading', { name: 'Music for you' })).toBeVisible();
+    expect(await page.evaluate(async () => ({ bridge: typeof window.p2, jobs: Array.isArray(await window.p2!.jobs()) }))).toEqual({ bridge: 'object', jobs: true });
     await expect(page.getByRole('button', { name: 'Like Fixture Sunrise', exact: true }).or(page.getByRole('button', { name: 'Unlike Fixture Sunrise', exact: true }))).toBeVisible();
     console.log('Desktop catalog ready');
     return { app, page };

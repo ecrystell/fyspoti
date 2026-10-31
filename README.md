@@ -4,6 +4,13 @@ Windows music application built by a four-person team. Implemented foundations i
 Person 3's secure cloud playlists, Person 2's playback/download module, and Person 4's
 provider spike and draft catalog contracts. Full application integration is in progress.
 
+The merged TypeScript Electron shell installs both P2's playback/download bridge
+and P3's account service. The default account UI uses previews and private cloud
+libraries. To build P1/P2's playback prototype, set
+`VITE_FYSPOTI_DESKTOP_MODE=prototype` before `npm run desktop`; its local data stays
+separate. See [P1 integration](docs/22-person-1-integration.md),
+[catalog core](docs/22-catalog-core.md), and [P2 setup](p2/README.md) for that route.
+
 - [Plans and architecture](docs/README.md)
 - [Provider spike](docs/16-provider-spike.md) and [capability matrix](docs/17-provider-capability-matrix.md)
 - [Shared contracts](packages/contracts/README.md)
