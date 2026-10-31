@@ -1,5 +1,5 @@
 import type { TrackMetadataSnapshot } from '@fyspoti/contracts';
-import { provisionalTrackId } from './identity.js';
+import { provisionalTrackId, rowIdentityKey } from './identity.js';
 import type { ImportedList, ImportedRow, ParsedSpotifyExport, SkipCounts } from './parse-export.js';
 
 export type RowResolution =
@@ -40,7 +40,7 @@ const clampTitle = (title: string): string => [...title].slice(0, MAX_TITLE).joi
 export const provisionalResolver: ImportResolver = async (row) => ({
   status: 'resolved',
   provisional: true,
-  trackId: await provisionalTrackId(row.uri),
+  trackId: await provisionalTrackId(rowIdentityKey(row)),
   metadataSnapshot: { title: row.title, artistNames: [row.artistName], durationMs: 0 },
 });
 
@@ -58,7 +58,7 @@ async function previewList(list: ImportedList, kind: ImportPreviewEntry['kind'],
       resolved: count('resolved'),
       ambiguous: count('ambiguous'),
       unmatched: count('unmatched'),
-      duplicates: rows.length - new Set(list.rows.map((row) => row.uri)).size,
+      duplicates: rows.length - new Set(list.rows.map(rowIdentityKey)).size,
     },
   };
 }

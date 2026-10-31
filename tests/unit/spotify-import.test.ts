@@ -8,6 +8,7 @@ import {
   previewSpotifyImport,
   provisionalTrackId,
   readSpotifyArchive,
+  rowIdentityKey,
   uuidV5,
   type ImportResolver,
 } from '@fyspoti/catalog';
@@ -38,7 +39,7 @@ const playlistFile = JSON.stringify({
         track('b', 'Second Song'),
         track('a', 'First Song'),
         { track: null, episode: null, audiobook: null, localTrack: { uri: 'spotify:local:x' } },
-        { track: { trackName: 'Missing URI', artistName: 'Fixture Artist' } },
+        { track: { artistName: 'Fixture Artist', trackUri: uri('z') } },
         track('c', 'Third Song'),
       ],
     },
@@ -126,6 +127,23 @@ describe('parsing the export', () => {
     const parsed = parseSpotifyExport(files);
     expect(parsed.likedSongs!.rows.map((row) => row.title)).toEqual(['Liked One']);
     expect([parsed.savedAlbums, parsed.savedArtists]).toEqual([1, 2]);
+  });
+
+  it('imports older library files, which have no URIs', async () => {
+    const row = (name: string, album: string) => ({ artist: 'Fixture Artist', album, track: name });
+    const text = JSON.stringify({ tracks: [row('Old Song', 'First Album'), row('Old Song', 'First Album'), row('Old Song', 'Second Album')], albums: [], shows: [] });
+    const { entries } = await previewSpotifyImport(parseSpotifyExport([{ name: 'YourLibrary.json', text }]));
+
+    expect(entries[0]!.counts).toEqual({ resolved: 3, ambiguous: 0, unmatched: 0, duplicates: 1 });
+    const ids = entries[0]!.rows.map(({ resolution }) => (resolution.status === 'resolved' ? resolution.trackId : ''));
+    expect(ids[0]).toMatch(UUID);
+    expect(ids[1]).toBe(ids[0]);
+    expect(ids[2]).not.toBe(ids[0]);
+  });
+
+  it('still rejects a URI that is present but invalid', () => {
+    const text = JSON.stringify({ tracks: [{ artist: 'Fixture Artist', album: 'Fixture Album', track: 'Song', uri: 'https://example.com/not-a-track' }] });
+    expect(() => parseSpotifyExport([{ name: 'YourLibrary.json', text }])).toThrow(ImportFormatError);
   });
 
   it('orders numbered playlist files numerically', () => {
@@ -236,7 +254,7 @@ describe('applying the import', () => {
     const resolver: ImportResolver = async (row) => {
       if (row.title === 'First Song') return { status: 'ambiguous', reason: 'Two versions fit' };
       if (row.title === 'Second Song') return { status: 'unmatched', reason: 'Nothing found' };
-      return { status: 'resolved', provisional: false, trackId: await provisionalTrackId(row.uri), metadataSnapshot: { title: row.title, artistNames: [row.artistName], durationMs: 1000 } };
+      return { status: 'resolved', provisional: false, trackId: await provisionalTrackId(rowIdentityKey(row)), metadataSnapshot: { title: row.title, artistNames: [row.artistName], durationMs: 1000 } };
     };
     const { library, items } = memoryLibrary();
     const outcome = await applyImportEntry(library, await firstEntry(resolver));

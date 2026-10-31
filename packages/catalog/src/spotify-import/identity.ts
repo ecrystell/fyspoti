@@ -1,3 +1,5 @@
+import type { ImportedRow } from './parse-export.js';
+
 // Fixed for this app. Changing it would give every imported row a new identity.
 const PROVISIONAL_NAMESPACE = 'c1f0a3de-7a54-4f26-9d0e-3b1f6e2a8c47';
 
@@ -18,9 +20,13 @@ export async function uuidV5(namespace: string, name: string): Promise<string> {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
+/** What makes two rows the same track. Older exports have no URIs, so they use their text. */
+export const rowIdentityKey = (row: ImportedRow): string =>
+  row.uri ?? ['text', row.title, row.artistName, row.albumName ?? ''].join('\n').normalize('NFC').toLowerCase();
+
 /**
  * A stable app-owned ID for a recording that has not been matched yet. The same
- * Spotify track always maps to the same ID, so duplicates stay recognizable and a
+ * identity key always maps to the same ID, so duplicates stay recognizable and a
  * later catalog pass can replace it. It is not a canonical recording identity.
  */
-export const provisionalTrackId = (spotifyUri: string): Promise<string> => uuidV5(PROVISIONAL_NAMESPACE, spotifyUri);
+export const provisionalTrackId = (identityKey: string): Promise<string> => uuidV5(PROVISIONAL_NAMESPACE, identityKey);

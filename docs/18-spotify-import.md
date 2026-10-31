@@ -6,7 +6,7 @@ Owner: P4 for reading and matching, P3 for storage and account connections, P1 f
 
 | Part | Status |
 | --- | --- |
-| Read Spotify's "Download your data" ZIP | Built and tested on synthetic files. **Not yet run on a real export.** |
+| Read Spotify's "Download your data" ZIP | Built. Tested on 15 real files from public repositories (see below). |
 | Preview before writing | Built |
 | Write into P3's library as new private playlists | Built, and tested through P3's real adapter with a faked server. Not run against a real database. |
 | Import screen | Not built (P1, or P4 with P1 components) |
@@ -63,15 +63,33 @@ Parser errors name files and fields only, never user content.
 
 ## Behavior worth knowing
 
-- **Provisional IDs.** P3 requires a UUID and no catalog exists yet, so each row gets a UUIDv5 derived from its Spotify URI. The same track always gets the same ID. This is a placeholder, not a canonical recording identity.
+- **Provisional IDs.** P3 requires a UUID and no catalog exists yet, so each row gets a UUIDv5 derived from its Spotify URI, or from its title, artist and album in older exports with no URIs. The same track always gets the same ID within a route, but a URI row and a text row for one song get different IDs. This is a placeholder, not a canonical recording identity.
 - **Durations are 0.** The export has none, and 0 passes P3's validation. Consumers must show this as unknown.
 - **Never overwrites.** Each import creates a new playlist. Importing twice creates a second copy.
 - **Failures stop, and do not retry.** P3's writes have no idempotency guarantee yet. The result says how far it got, and the caller can resume into the same playlist.
 - **Layout changes fail loudly.** If every row in a list is unreadable, the import stops rather than reporting an empty success.
 
-## Unverified: the file layout
+## Tested against real exports
 
-Spotify's documentation lists what the export contains but not its [field layout](https://support.spotify.com/us/article/understanding-my-data/). The parser's field names come from our knowledge of past exports. **Running `import:preview` on one real export is the next check.** If the layout differs, it stops with an error rather than importing bad data.
+Spotify documents what the [export contains](https://support.spotify.com/us/article/understanding-my-data/), not its field layout. So the parser was run on 15 real files that people published in public GitHub repositories: 8 `Playlist1.json` and 7 `YourLibrary.json`. Each went through the ZIP reader with a decoy account file beside it. The files stayed in memory and nothing was saved.
+
+| Result | Count |
+| --- | --- |
+| Files imported | 15 of 15 |
+| Playlists | 41 |
+| Tracks ready | 1,764, including 469 liked songs |
+| Unreadable rows | 0 |
+| Podcast episodes correctly skipped | 2 |
+
+This testing found one real bug. Older exports have no `uri` in `YourLibrary.json`, which rejected 3 of the 7 files. Those rows now import using their text.
+
+Still not covered:
+
+- **A whole real ZIP.** The samples were loose files, so the folder layout of a real download is unconfirmed. The reader ignores folders, so this should not matter.
+- **Local files and audiobooks.** No sample contained either, so their field layout is unconfirmed. They are detected without reading their fields.
+- **A real database.** Writes were tested through P3's adapter with a faked server. Docker and hosted credentials were not available.
+
+Run `npm run import:preview` on a real download to cover the first point.
 
 ## Requests to other owners
 

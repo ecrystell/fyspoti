@@ -8,7 +8,8 @@ export type SkipCounts = Record<SkipReason, number>;
 export interface ImportedRow {
   /** Original index in the Spotify list, so skipped rows leave gaps instead of reordering. */
   position: number;
-  uri: string;
+  /** Null for older exports, whose library files have no URIs. */
+  uri: string | null;
   title: string;
   artistName: string;
   albumName: string | null;
@@ -32,7 +33,7 @@ export interface ParsedSpotifyExport {
 // layout, so everything here is untrusted input that may change without notice.
 const MAX_TEXT = 500;
 const Text = z.string().trim().min(1).refine((value) => [...value].length <= MAX_TEXT && !value.includes('\0'));
-const TrackUri = z.string().regex(/^spotify:track:[A-Za-z0-9]{22}$/);
+const TrackUri = z.string().regex(/^spotify:track:[A-Za-z0-9]{22}$/).nullish();
 const AlbumName = z.string().trim().nullish();
 
 const PlaylistTrack = z.object({ trackName: Text, artistName: Text, albumName: AlbumName, trackUri: TrackUri });
@@ -75,7 +76,7 @@ function classifyPlaylistItem(value: unknown, position: number): ImportedRow | S
   if (item.data.track) {
     const track = PlaylistTrack.safeParse(item.data.track);
     if (!track.success) return 'malformed';
-    return { position, uri: track.data.trackUri, title: track.data.trackName, artistName: track.data.artistName, albumName: track.data.albumName ?? null };
+    return { position, uri: track.data.trackUri ?? null, title: track.data.trackName, artistName: track.data.artistName, albumName: track.data.albumName ?? null };
   }
   if (item.data.episode) return 'episode';
   if (item.data.audiobook) return 'audiobook';
@@ -119,7 +120,7 @@ export function parseSpotifyExport(files: ExportFile[]): ParsedSpotifyExport {
           (value, position) => {
             const track = LibraryTrack.safeParse(value);
             if (!track.success) return 'malformed';
-            return { position, uri: track.data.uri, title: track.data.track, artistName: track.data.artist, albumName: track.data.album ?? null };
+            return { position, uri: track.data.uri ?? null, title: track.data.track, artistName: track.data.artist, albumName: track.data.album ?? null };
           },
           null,
           libraryFile.name,
