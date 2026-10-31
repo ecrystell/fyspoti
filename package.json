@@ -12,10 +12,11 @@
   ],
   "scripts": {
     "build": "npm run build:packages && npm run build:frontend",
-    "typecheck": "tsc -b && tsc -p tsconfig.frontend.json && tsc -p tsconfig.tests.json",
+    "typecheck": "tsc -b && tsc -p tsconfig.frontend.json && tsc -p p2/tsconfig.json && tsc -p tsconfig.tests.json",
     "pretest": "npm run build:packages",
     "test": "vitest run --config vitest.config.ts",
-    "check": "npm run typecheck && npm test && npm run check --workspace @fyspoti/contracts",
+    "check": "npm run typecheck && npm test && npm run test:p2 && npm run check --workspace @fyspoti/contracts",
+    "test:p2": "node --test p2/tests/*.test.ts",
     "import:preview": "npm run build --silent && node scripts/spotify-import-preview.mjs",
     "test:integration": "node scripts/run-local-integration.mjs",
     "test:migrations": "node scripts/check-library-upgrade.mjs",
@@ -30,7 +31,8 @@
     "desktop": "electron .",
     "setup:desktop": "node node_modules/electron/install.js",
     "build:packages": "tsc -b",
-    "build:frontend": "tsc -p tsconfig.frontend.json && vite build"
+    "build:frontend": "npm run build:p2 && tsc -p tsconfig.frontend.json && vite build",
+    "build:p2": "node scripts/build-p2.mjs"
   },
   "devDependencies": {
     "@types/node": "24.19.2",
@@ -39,6 +41,7 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "electron": "45.2.1",
+    "esbuild": "0.25.12",
     "vite": "6.4.5"
   },
   "dependencies": {

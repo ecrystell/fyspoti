@@ -1,8 +1,8 @@
 # Fyspoti
 
-Windows music application built by a four-person team. Implemented foundations include
-Person 3's secure cloud playlists, Person 2's playback/download module, and Person 4's
-provider spike and draft catalog contracts. Full application integration is in progress.
+Windows music application built by a four-person team. The Electron desktop shell now
+uses Person 2's player and download bridge. Person 3's cloud playlists and Person 4's
+catalog contracts remain separate integration work.
 
 - [Plans and architecture](docs/README.md)
 - [Provider spike](docs/16-provider-spike.md) and [capability matrix](docs/17-provider-capability-matrix.md)
@@ -11,17 +11,18 @@ provider spike and draft catalog contracts. Full application integration is in p
 
 ## Desktop frontend
 
-Person 1's React/Electron UI is implemented. See [frontend features](docs/16-person-1-implementation.md) and [queue/Connect audit](docs/21-queue-connect-menu-audit.md). Backend modules exist but are not yet connected to the prototype.
+Person 1's React/Electron UI is implemented. See [frontend features](docs/16-person-1-implementation.md) and [queue/Connect audit](docs/21-queue-connect-menu-audit.md). The desktop player is connected to Person 2's module.
 
 After installing dependencies:
 
 ```powershell
 npm run setup:desktop
 npm run build
+./p2/setup.ps1
 npm run desktop
 ```
 
-Windows shortcut: run `.\launch.ps1`. It finds Node on PATH or the existing Codex runtime. Browser development: `npm run dev`. The UI uses real online metadata/artwork and preview audio; full-track playback, downloads and cloud synchronization are not integrated into the UI yet.
+Windows shortcut: run `.\launch.ps1`. It finds Node on PATH or the existing Codex runtime. Browser development: `npm run dev` keeps the preview player. The desktop uses P2 for full-track playback and downloads through the provisional YouTube route recorded in [the provider spike](docs/16-provider-spike.md). The Python setup is required for that route; local files work through the same player. Cloud synchronization is still separate work.
 
 ## Development
 

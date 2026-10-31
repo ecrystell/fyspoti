@@ -1,1 +1,10 @@
 /// <reference types="vite/client" />
+
+import type { P2Bridge } from '../p2/src/electron-preload.ts';
+
+declare global {
+  interface Window {
+    p2?: P2Bridge;
+    desktop?: { windowAction(action: string): void };
+  }
+}

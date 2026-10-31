@@ -66,7 +66,7 @@ export interface DownloadRequest {
   trackId: string;
   candidateId: string;
   url: string;
-  sourceKind: 'direct' | 'spotdl';
+  sourceKind: 'direct' | 'spotdl' | 'yt-dlp';
   matchedAudioUrl?: string;
   expectedBytes?: number;
   title?: string;
