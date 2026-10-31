@@ -11,3 +11,4 @@ export * from './recording/version.js';
 export * from './matching/score.js';
 export * from './matching/classify.js';
 export * from './youtube/port.js';
+export * from './lyrics/lrclib.js';

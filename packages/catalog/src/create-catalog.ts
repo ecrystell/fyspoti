@@ -1,7 +1,10 @@
-import { MatchResult, type AppError, type CatalogApi, type Cursor, type Page, type Result, type SearchHit, type SourceCandidate, type Track } from '@fyspoti/contracts';
+import { MatchResult, type CatalogApi, type DiscoveryApi, type Page, type Result, type SearchHit, type SourceCandidate, type Track } from '@fyspoti/contracts';
+import { createDiscovery } from './discovery.js';
+import { createLrclib, type LyricsPort } from './lyrics/lrclib.js';
 import { classify } from './matching/classify.js';
 import { scoreRow, type MatchTarget, type ScoredRow, type SourceRow } from './matching/score.js';
 import { candidateId } from './recording/identity.js';
+import { canUseStale, decodeCursor, encodeCursor, fail, guarded, ok, present } from './result.js';
 import { createMemoryCatalogStore, type CatalogStore, type MatchOverride } from './store.js';
 import { withBackoff } from './youtube/backoff.js';
 import { albumFromRow, artistFromRow, sourceFromRow, trackFromRow } from './youtube/normalize.js';
@@ -15,56 +18,13 @@ const ALBUMS_PER_PAGE = 4;
 const ARTISTS_PER_PAGE = 2;
 const SEARCH_CACHE_SIZE = 50;
 const SEARCH_CACHE_TTL_MS = 5 * 60 * 1000;
-const DEFAULT_RETRY_AFTER_MS = 30_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const METADATA_TTL_MS = 7 * DAY_MS;
 // A good match rarely changes. A failed one is retried soon, because the fault may
 // have been a bad moment at the provider and not a missing recording.
 const MATCH_TTL_MS: Readonly<Record<MatchResult['status'], number>> = { matched: 30 * DAY_MS, ambiguous: DAY_MS, 'no-match': 60 * 60 * 1000 };
 
-const ok =<T>(value: T): Result<T> => ({ ok: true, value });
-const fail = (error: AppError): Result<never> => ({ ok: false, error });
 const unknownId = (kind: string, id: string): Result<never> => fail({ code: 'UNAVAILABLE', message: `Unknown ${kind}: ${id}`, retryable: false });
-
-function toAppError(error: unknown): AppError {
-  if (!(error instanceof ProviderFailure)) throw error;
-  const provider = YTMUSIC_PROVIDER;
-  switch (error.kind) {
-    case 'cancelled':
-      return { code: 'CANCELLED', message: 'Request was cancelled', retryable: false };
-    case 'rate-limited':
-      return { code: 'RATE_LIMITED', message: 'YouTube Music is limiting requests', retryable: true, retryAfterMs: error.retryAfterMs ?? DEFAULT_RETRY_AFTER_MS, provider };
-    case 'network':
-      return { code: 'UNAVAILABLE', message: 'YouTube Music could not be reached', retryable: true, provider };
-    case 'provider':
-      return { code: 'UNAVAILABLE', message: `YouTube Music failed: ${error.message}`, retryable: true, provider };
-  }
-}
-
-const guarded = async <T>(work: () => Promise<Result<T>>): Promise<Result<T>> => {
-  try {
-    return await work();
-  } catch (error) {
-    return fail(toAppError(error));
-  }
-};
-
-// Old data beats an error when the provider is down. A cancellation is the caller
-// leaving, so it is never answered with stale data.
-const canUseStale = (error: unknown): boolean => error instanceof ProviderFailure && error.kind !== 'cancelled';
-
-const encodeCursor = (query: string, offset: number): Cursor => btoa(encodeURIComponent(JSON.stringify({ query, offset })));
-
-function decodeCursor(cursor: Cursor, query: string): number | null {
-  try {
-    const value = JSON.parse(decodeURIComponent(atob(cursor))) as { query?: unknown; offset?: unknown };
-    return value.query === query && typeof value.offset === 'number' ? value.offset : null;
-  } catch {
-    return null;
-  }
-}
-
-const present = <T>(items: Array<T | null>): T[] => items.filter((item) => item !== null);
 
 // Each page holds some of every kind, so a search for an album does not bury it
 // behind a full page of songs. A kind that runs out leaves its slots to the others.
@@ -86,6 +46,7 @@ function mixedPages(tracks: SearchHit[], albums: SearchHit[], artists: SearchHit
 export interface CatalogOptions {
   ytMusic: YtMusicPort;
   store?: CatalogStore;
+  lyrics?: LyricsPort;
   now?: () => number;
 }
 
@@ -95,19 +56,25 @@ export interface Freshness {
   stale: boolean;
 }
 
-export interface Catalog extends CatalogApi {
+export interface Catalog extends CatalogApi, DiscoveryApi {
   /** Saves a person's correction of a match for this track. */
   setMatchOverride(trackId: string, override: MatchOverride): void;
   /** How old the saved copy of a track, album or artist is. Null if there is none. */
   freshness(id: string): Freshness | null;
 }
 
-export function createCatalog({ ytMusic: provider, now = Date.now, store = createMemoryCatalogStore({ now }) }: CatalogOptions): Catalog {
+export function createCatalog({ ytMusic: provider, now = Date.now, store = createMemoryCatalogStore({ now }), lyrics = createLrclib() }: CatalogOptions): Catalog {
   const ytMusic = withBackoff(provider, now);
   const searches = new Map<string, { hits: SearchHit[]; expiresAt: number }>();
   const isFresh = (id: string): boolean => now() - (store.savedAt(id) ?? 0) < METADATA_TTL_MS;
 
   async function rememberRow(row: TrackRow): Promise<Track | null> {
+    // The explicit status is part of a track's ID, so a radio row, which has none,
+    // must find the track it already is instead of becoming a second one.
+    if (row.isExplicit == null && row.videoId) {
+      const known = store.findTrackBySource(row.videoId);
+      if (known) return known;
+    }
     const track = await trackFromRow(row);
     if (!track) return null;
     store.putTrack(track);
@@ -256,7 +223,11 @@ export function createCatalog({ ytMusic: provider, now = Date.now, store = creat
     });
   }
 
+  const discovery = createDiscovery({ ytMusic, store, lyrics, rememberRow, now });
+
   return {
+    ...discovery,
+
     setMatchOverride: (trackId, override) => store.setOverride(trackId, override),
 
     freshness: (id) => {
@@ -318,9 +289,6 @@ export function createCatalog({ ytMusic: provider, now = Date.now, store = creat
           throw error;
         }
       }),
-
-    // Task 12. An error, not an empty page, so a surface cannot look like "no music".
-    getRecommendations: async () => fail({ code: 'UNAVAILABLE', message: 'Recommendations are not built yet', retryable: false }),
 
     findCandidates: (trackId, options) =>
       guarded(async () => {

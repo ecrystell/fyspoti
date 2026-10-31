@@ -18,6 +18,8 @@ export interface CachedMatch {
  */
 export interface CatalogStore {
   getTrack(id: string): Track | undefined;
+  /** The saved track that came from this provider source, if any. */
+  findTrackBySource(sourceId: string): Track | undefined;
   putTrack(track: Track): void;
   getAlbumName(id: string): string | undefined;
   getAlbum(id: string): Album | undefined;
@@ -116,6 +118,8 @@ export function createMemoryCatalogStore({ now = Date.now, initial, onChange, ma
     (initial?.albumRefs ?? []).map(([id, { providerId, name }]) => [id, { providerId, ...(name === undefined ? {} : { name }) }]),
   );
   const artistRefs = new Map<string, string>(initial?.artistRefs);
+  const trackBySource = new Map<string, string>();
+  for (const [id, { value }] of tracks) for (const ref of value.providerRefs) trackBySource.set(ref.id, id);
 
   // Maps keep insertion order, and a re-saved key moves to the end, so the first key
   // is always the oldest.
@@ -137,9 +141,13 @@ export function createMemoryCatalogStore({ now = Date.now, initial, onChange, ma
 
   return {
     getTrack: (id) => tracks.get(id)?.value,
+    findTrackBySource: (sourceId) => tracks.get(trackBySource.get(sourceId) ?? '')?.value,
     putTrack: (track) => {
       const known = tracks.get(track.id)?.value;
-      put(tracks, track.id, known ? { ...track, providerRefs: mergeRefs(known.providerRefs, track.providerRefs) } : track);
+      const explicit = track.explicit === 'unknown' && known ? known.explicit : track.explicit;
+      put(tracks, track.id, known ? { ...track, explicit, providerRefs: mergeRefs(known.providerRefs, track.providerRefs) } : track);
+      for (const ref of track.providerRefs) trackBySource.set(ref.id, track.id);
+      trim(trackBySource);
     },
     getAlbumName: (id) => albums.get(id)?.value.title ?? albumRefs.get(id)?.name,
     getAlbum: (id) => albums.get(id)?.value,

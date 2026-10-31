@@ -1,7 +1,7 @@
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { z } from 'zod';
-import { AlbumDetail, AlbumRow, ArtistRow, ProviderFailure, TrackRow, type YtMusicPort } from './port.js';
+import { AlbumDetail, AlbumRow, ArtistRow, HomeShelfRow, MoodRow, PlaylistRow, ProviderFailure, TrackRow, type YtMusicPort } from './port.js';
 
 const PROTOCOL = 1;
 const REQUEST_TIMEOUT_MS = 15_000;
@@ -145,6 +145,13 @@ export function createYtMusicWorker({ python, workerPath, pythonArgs = ['-I'], r
     searchArtists: async (query, limit, signal) => parse(z.array(ArtistRow), await call('search', { query, filter: 'artists', limit }, signal)),
     album: async (browseId, signal) => parse(AlbumDetail, await call('album', { browseId }, signal)),
     artist: async (browseId, signal) => parse(ArtistRow, await call('artist', { browseId }, signal)),
+    relatedArtists: async (browseId, signal) => parse(z.array(ArtistRow), await call('related', { browseId }, signal)),
+    radio: async (videoId, limit, signal) => parse(z.array(TrackRow), await call('radio', { videoId, limit }, signal)),
+    home: async (limit, signal) => parse(z.array(HomeShelfRow), await call('home', { limit }, signal)),
+    moods: async (signal) => parse(z.array(MoodRow), await call('moods', {}, signal)),
+    moodPlaylists: async (params, signal) => parse(z.array(PlaylistRow), await call('moodPlaylists', { params }, signal)),
+    playlist: async (playlistId, limit, signal) => parse(z.array(TrackRow), await call('playlist', { playlistId, limit }, signal)),
+    suggestions: async (query, signal) => parse(z.array(z.string()), await call('suggestions', { query }, signal)),
     close: () => stop(new ProviderFailure('cancelled', 'Catalog worker closed')),
   };
 }

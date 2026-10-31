@@ -34,5 +34,12 @@ export function withBackoff(port: YtMusicPort, now: () => number): YtMusicPort {
     searchArtists: (query, limit, signal) => guard(() => port.searchArtists(query, limit, signal)),
     album: (browseId, signal) => guard(() => port.album(browseId, signal)),
     artist: (browseId, signal) => guard(() => port.artist(browseId, signal)),
+    relatedArtists: (browseId, signal) => guard(() => port.relatedArtists(browseId, signal)),
+    radio: (videoId, limit, signal) => guard(() => port.radio(videoId, limit, signal)),
+    home: (limit, signal) => guard(() => port.home(limit, signal)),
+    moods: (signal) => guard(() => port.moods(signal)),
+    moodPlaylists: (params, signal) => guard(() => port.moodPlaylists(params, signal)),
+    playlist: (playlistId, limit, signal) => guard(() => port.playlist(playlistId, limit, signal)),
+    suggestions: (query, signal) => guard(() => port.suggestions(query, signal)),
   };
 }

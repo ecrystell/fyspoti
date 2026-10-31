@@ -16,6 +16,7 @@ from ytmusicapi import YTMusic
 PROTOCOL = 1
 SEARCH_FILTERS = {"songs", "videos", "albums", "artists"}
 MAX_LIMIT = 50
+MAX_PLAYLIST_LIMIT = 200
 
 write_lock = threading.Lock()
 clients = threading.local()
@@ -33,12 +34,27 @@ def client():
     return clients.ytmusic
 
 
+# Rows use "thumbnails", except radio rows, which use "thumbnail".
 def thumbnails(item):
-    return [{"url": t.get("url"), "width": t.get("width"), "height": t.get("height")} for t in item.get("thumbnails") or []]
+    rows = item.get("thumbnails") or item.get("thumbnail") or []
+    return [{"url": t.get("url"), "width": t.get("width"), "height": t.get("height")} for t in rows]
 
 
 def artists(item):
     return [{"name": a.get("name"), "id": a.get("id")} for a in item.get("artists") or []]
+
+
+# Radio rows give length as "3:00" and have no duration_seconds.
+def seconds(item):
+    if item.get("duration_seconds"):
+        return item["duration_seconds"]
+    parts = str(item.get("length") or "").split(":")
+    if not all(part.isdigit() for part in parts):
+        return None
+    total = 0
+    for part in parts:
+        total = total * 60 + int(part)
+    return total
 
 
 def track(item, album=None):
@@ -50,7 +66,7 @@ def track(item, album=None):
         "artists": artists(item),
         "albumName": item_album.get("name") if isinstance(item_album, dict) else (album or item_album),
         "albumId": item_album.get("id") if isinstance(item_album, dict) else None,
-        "durationSeconds": item.get("duration_seconds"),
+        "durationSeconds": seconds(item),
         "isExplicit": item.get("isExplicit"),
         "thumbnails": thumbnails(item),
     }
@@ -63,6 +79,7 @@ def album_summary(item):
         "type": item.get("type"),
         "year": item.get("year"),
         "artists": artists(item),
+        "isExplicit": item.get("isExplicit"),
         "thumbnails": thumbnails(item),
     }
 
@@ -94,7 +111,68 @@ def artist(params):
     return {"browseId": params["browseId"], "name": value.get("name"), "thumbnails": thumbnails(value)}
 
 
-METHODS = {"search": search, "album": album, "artist": artist}
+def related_artists(params):
+    value = client().get_artist(str(params["browseId"]))
+    rows = (value.get("related") or {}).get("results") or []
+    return [{"browseId": row.get("browseId"), "name": row.get("title"), "thumbnails": thumbnails(row)} for row in rows]
+
+
+def radio(params):
+    limit = min(int(params.get("limit", 50)), MAX_LIMIT)
+    return [track(row) for row in client().get_watch_playlist(videoId=str(params["videoId"]), radio=True, limit=limit).get("tracks") or []]
+
+
+def playlist_summary(item):
+    return {"playlistId": item.get("playlistId"), "title": item.get("title"), "description": item.get("description"), "thumbnails": thumbnails(item)}
+
+
+def home_item(item):
+    if item.get("videoId"):
+        return {"kind": "track", "row": track(item)}
+    if str(item.get("browseId") or "").startswith("MPRE"):
+        return {"kind": "album", "row": album_summary(item)}
+    if item.get("playlistId"):
+        return {"kind": "playlist", "row": playlist_summary(item)}
+    return None
+
+
+def home(params):
+    shelves = []
+    for shelf in client().get_home(limit=int(params.get("limit", 6))):
+        items = [home_item(item) for item in shelf.get("contents") or [] if item]
+        shelves.append({"title": shelf.get("title"), "items": [item for item in items if item]})
+    return shelves
+
+
+def moods(_params):
+    return [{"group": group, "title": row.get("title"), "params": row.get("params")} for group, rows in client().get_mood_categories().items() for row in rows]
+
+
+def mood_playlists(params):
+    return [playlist_summary(row) for row in client().get_mood_playlists(str(params["params"]))]
+
+
+def playlist(params):
+    limit = min(int(params.get("limit", 100)), MAX_PLAYLIST_LIMIT)
+    return [track(row) for row in client().get_playlist(str(params["playlistId"]), limit=limit).get("tracks") or []]
+
+
+def suggestions(params):
+    return [str(row) for row in client().get_search_suggestions(str(params["query"]))]
+
+
+METHODS = {
+    "search": search,
+    "album": album,
+    "artist": artist,
+    "related": related_artists,
+    "radio": radio,
+    "home": home,
+    "moods": moods,
+    "moodPlaylists": mood_playlists,
+    "playlist": playlist,
+    "suggestions": suggestions,
+}
 
 
 def classify(exc):

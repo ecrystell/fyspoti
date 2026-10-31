@@ -1,8 +1,8 @@
-import { Album, Artist, Track, type Artwork, type ExplicitStatus } from '@fyspoti/contracts';
+import { Album, Artist, Track, type Artwork, type BrowsePlaylist, type ExplicitStatus } from '@fyspoti/contracts';
 import { providerEntityId, recordingId } from '../recording/identity.js';
 import { albumFlags, parseTitle } from '../recording/version.js';
 import type { SourceRow } from '../matching/score.js';
-import { YTMUSIC_PROVIDER, type AlbumRow, type ArtistRow, type TrackRow } from './port.js';
+import { YTMUSIC_PROVIDER, type AlbumRow, type ArtistRow, type PlaylistRow, type TrackRow } from './port.js';
 
 export const OFFICIAL_AUDIO_TYPE = 'MUSIC_VIDEO_TYPE_ATV';
 const OFFICIAL_VIDEO_TYPE = 'MUSIC_VIDEO_TYPE_OMV';
@@ -76,6 +76,11 @@ export async function artistFromRow(row: ArtistRow): Promise<Artist | null> {
     artwork: artworkOf(row.thumbnails),
     providerRefs: [{ provider: YTMUSIC_PROVIDER, id: row.browseId }],
   });
+}
+
+export function playlistFromRow(row: PlaylistRow): BrowsePlaylist | null {
+  if (!row.playlistId || !row.title) return null;
+  return { ref: row.playlistId, title: row.title, ...(row.description ? { description: row.description } : {}), artwork: artworkOf(row.thumbnails) };
 }
 
 /** Null when a row cannot be scored or handed to playback. */
