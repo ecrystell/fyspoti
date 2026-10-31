@@ -71,3 +71,8 @@ See [queue/sidebar rebuild and menu audit](21-queue-connect-menu-audit.md).
 ## Team integration
 
 See [P2/P3/P4 integration, behavior changes and requests to other owners](22-person-1-integration.md).
+
+
+## Context menus
+
+See [desktop-derived track and playlist menus](23-context-menus.md).

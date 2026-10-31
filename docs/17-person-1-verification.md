@@ -45,3 +45,8 @@ Blocked or not verified:
 - `npm` is not on PATH here. The `npm run check` steps were run directly with the bundled Node 24.22.1.
 - This shell inherits `ELECTRON_RUN_AS_NODE=1` from VS Code, which stops Electron from starting. `launch.ps1` now clears it.
 - Not verified: local-file playback, downloaded-artifact playback, OS media keys, DPI variants.
+
+
+## Context menus pass
+
+2026-10-31. Live Electron checks of the track/playlist menus and submenu keyboard path passed; 53 unit tests passed. Details and unverified cases in [23-context-menus.md](23-context-menus.md#verification).

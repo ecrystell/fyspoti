@@ -1,0 +1,19 @@
+/* Track context menu and its Add to playlist submenu. Sizes follow the Spotify desktop
+   package's context-menu rules: 32px rows, 8px surface padding and radius, 350px maximum
+   width, 250px submenu minimum width capped at 50vh. Implemented independently. */
+.menu{max-width:350px;max-height:calc(100vh - 24px);padding:8px;border-radius:8px}
+.menu button{display:flex;align-items:center;min-height:32px;padding:0 12px}
+.menu-divider,.submenu-divider{height:1px;background:#ffffff1a;margin:8px}
+.submenu-host{position:static}
+.menu .submenu-trigger{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.menu .submenu-trigger[data-context-menu-open=true]{background:#3e3e3e}
+.submenu{position:fixed;z-index:22;min-width:250px;max-width:350px;max-height:50vh;display:flex;flex-direction:column;overflow:hidden;background:#282828;border-radius:8px;padding:8px;box-shadow:0 4px 6px #0000004d,0 15px 40px #0009;animation:menu-appear .12s ease-out both}
+.submenu-filter{display:flex;align-items:center;gap:8px;height:32px;padding:0 10px;margin-bottom:4px;border-radius:4px;background:#3e3e3e;color:#b3b3b3}
+.submenu-filter:focus-within{outline:1px solid #ffffff4d}
+.submenu-filter input{flex:1;min-width:0;background:none;border:0;outline:0;color:white;font-size:14px}
+.submenu button{display:flex;align-items:center;gap:12px;width:100%;min-height:32px;padding:0 12px;border-radius:4px;text-align:left;font-size:14px}
+.submenu button:hover,.submenu button:focus-visible{outline:0;background:#3e3e3e}
+.submenu-list{overflow-y:auto;min-height:0}
+.submenu-list button span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.submenu-list small{flex-shrink:0;color:#b3b3b3;font-size:12px}
+.submenu .submenu-empty{padding:8px 12px;color:#b3b3b3;font-size:13px}

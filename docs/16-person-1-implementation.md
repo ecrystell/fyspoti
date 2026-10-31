@@ -73,3 +73,8 @@ Rebuilt Queue with artist subtitles, compact rows, hover menus, explicit/manual 
 ## Team integration pass
 
 Replaced the renderer stand-ins with teammate modules: shared contract tracks with UUID IDs, P2 `Player` for all playback and the queue, P3 cloud sign-in and playlists, the P4 Spotify import screen, and a TypeScript Electron shell hosting P2 desktop services with a CSP. Also fixed a JSX runtime bug that crashed the Queue panel. See 22-person-1-integration.md.
+
+
+## Context menus
+
+Track menu now uses an **Add to playlist ▸** submenu (Find a playlist filter, New playlist, scrolling list) instead of listing every playlist inline. The playlist menu follows the desktop composition order. Evidence and limits: [23-context-menus.md](23-context-menus.md).
