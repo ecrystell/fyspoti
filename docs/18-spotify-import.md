@@ -11,9 +11,9 @@ Owner: P4 for reading and matching, P3 for storage and account connections, P1 f
 | Write into P3's library as new private playlists | Built, and tested through P3's real adapter with a faked server. Not run against a real database. |
 | Import screen | Not built (P1, or P4 with P1 components) |
 | Sign in with Spotify | Not built. Needs a Spotify developer app (see below). |
-| Matching imported rows to playable audio | Not built. Depends on tasks 4–7. |
+| Matching imported rows to playable audio | Built in the catalog. See [doc 22](22-catalog-core.md). Not yet called from the import flow. |
 
-**Imported tracks will not play yet.** This moves a user's library structure into the app. Playback needs the catalog match in task 7.
+**Imported tracks will not play yet.** This moves a user's library structure into the app. `findCandidates` can now match a row from its snapshot, but no stream resolver or import screen exists.
 
 ## Two routes
 
@@ -102,8 +102,6 @@ Run `npm run import:preview` on a real download to cover the first point.
 - A plan for replacing provisional track IDs once the catalog can match them.
 
 **P1:** an import screen covering file choice, preview counts, and interrupted or partial results.
-
-**P4 contract note:** `AppId` in `packages/contracts` accepts any string, but P3 requires UUIDs. Tighten it when catalog IDs are designed.
 
 ## Adding "Sign in with Spotify" later
 

@@ -1,0 +1,16 @@
+.spotify-import{max-width:760px}
+.import-steps{padding-left:20px;line-height:1.7;color:#b3b3b3}
+.import-steps b{color:white}
+.link-button{color:white;text-decoration:underline;font-size:inherit;padding:0 4px}
+.import-error{color:#f3727f}
+.import-stats{display:flex;flex-wrap:wrap;gap:28px;margin:20px 0 8px;color:#b3b3b3;font-size:13px}
+.import-stats b{display:block;color:white;font-size:28px;line-height:1.2}
+.import-muted{color:#b3b3b3;font-size:13px}
+.import-entries{list-style:none;padding:0;margin:16px 0;display:grid;gap:8px}
+.import-entry{display:flex;gap:12px;align-items:flex-start;background:#ffffff0a;border-radius:6px;padding:12px}
+.import-entry input{margin-top:3px;accent-color:#1ed760}
+.import-entry span{display:block;color:#b3b3b3;font-size:13px;margin-top:4px}
+.import-outcome.complete{color:#1ed760}
+.import-outcome.interrupted,.import-outcome.failed{color:#f3727f}
+.import-actions .save{margin:8px 0 0}
+.import-actions .save:disabled,.spotify-import .pill:disabled{opacity:.5;cursor:default}
