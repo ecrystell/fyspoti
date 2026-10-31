@@ -5,17 +5,16 @@ One JSON request on stdin; one JSON result on stdout. No signed URL is logged.
 
 import json
 import re
-import subprocess
 import sys
 import time
 import urllib.error
 import urllib.request
-from pathlib import Path
 
 import truststore
 
 truststore.inject_into_ssl()
 
+import yt_dlp
 from ytmusicapi import YTMusic
 from match import choose_video
 
@@ -39,15 +38,22 @@ def wait_until_servable(url, timeout=10):
         time.sleep(0.5)
 
 
+class QuietLogger:
+    # stdout carries the JSON reply only; yt-dlp's own output stays out of it.
+    def debug(self, message): pass
+    def info(self, message): pass
+    def warning(self, message): pass
+    def error(self, message): pass
+
+
 def resolve(video_id):
-    video_url = f"https://www.youtube.com/watch?v={video_id}"
-    result = subprocess.run(
-        [sys.executable, str(Path(__file__).with_name("yt_dlp_entry.py")), "--no-warnings", "--no-playlist", "--js-runtimes", "node", "-f", "bestaudio[ext=m4a]/bestaudio", "--dump-single-json", video_url],
-        capture_output=True, text=True, timeout=90, check=False,
-    )
-    if result.returncode:
-        raise ValueError("Stream resolution failed: " + result.stderr.strip()[-300:])
-    data = json.loads(result.stdout)
+    # In-process rather than a second interpreter: saves about a second per lookup.
+    options = {"quiet": True, "no_warnings": True, "noplaylist": True, "logger": QuietLogger(), "js_runtimes": {"node": {}}, "format": "bestaudio[ext=m4a]/bestaudio"}
+    try:
+        with yt_dlp.YoutubeDL(options) as ydl:
+            data = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
+    except yt_dlp.utils.DownloadError as error:
+        raise ValueError("Stream resolution failed: " + str(error)[-300:]) from None
     url = data.get("url")
     if not isinstance(url, str) or not url.startswith("https://"):
         raise ValueError("Provider returned no playable URL")

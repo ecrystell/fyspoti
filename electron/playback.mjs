@@ -3,7 +3,7 @@ import { AccountPlaybackStore } from '@fyspoti/accounts';
 import { PlaybackGenerationSchema, PlaybackResolveSchema, PlaybackSaveSchema, PlaybackSourceSchema } from '@fyspoti/contracts';
 import { trustedSender } from './ipc.mjs';
 
-export async function installPlayback({ app, ipcMain, safeStorage, window, appUrl, accounts, resolveSource }) {
+export async function installPlayback({ app, ipcMain, safeStorage, window, appUrl, accounts, resolveSource, prefetchSource }) {
   const store = new AccountPlaybackStore(path.join(app.getPath('userData'), 'accounts', 'queues'), {
     available: () => safeStorage.isAsyncEncryptionAvailable(), encrypt: text => safeStorage.encryptStringAsync(text), decrypt: bytes => safeStorage.decryptStringAsync(Buffer.from(bytes)),
   });
@@ -18,7 +18,14 @@ export async function installPlayback({ app, ipcMain, safeStorage, window, appUr
   const routes = {
     session: { call: () => ({ ok: true, value: store.session() }) },
     load: { schema: PlaybackGenerationSchema, call: value => store.load(value) },
-    save: { schema: PlaybackSaveSchema, call: value => store.save(value.generation, value.snapshot) },
+    save: { schema: PlaybackSaveSchema, async call(value) {
+      const saved = await store.save(value.generation, value.snapshot);
+      // While a track plays, resolve the next one so it starts without the multi-second lookup.
+      const { state, upcomingIds } = value.snapshot;
+      const next = state.status === 'playing' && saved.ok && store.valid(value.generation) ? state.queue.find(item => item.id === upcomingIds[0]) : undefined;
+      if (next?.durationMs && next.durationMs <= 3600000) prefetchSource?.(next);
+      return saved;
+    } },
     resolve: { schema: PlaybackResolveSchema, async call(value) {
       if (!store.valid(value.generation)) return failure('AUTH_REQUIRED', 'The playback session changed.');
       if (!value.track.durationMs || value.track.durationMs > 3600000 || value.track.title.length > 300 || value.track.artist.length > 300) return failure('UNAVAILABLE', 'Full-track playback needs supported recording metadata.', true);
