@@ -1,5 +1,7 @@
 node_modules/
 dist/
+*.log
+work/
 coverage/
 .env
 .env.*
@@ -9,4 +11,3 @@ services/cloud/supabase/.temp/
 services/cloud/supabase/.branches/
 __pycache__/
 .venv/
-*.log

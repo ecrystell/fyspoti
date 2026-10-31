@@ -9,6 +9,20 @@ provider spike and draft catalog contracts. Full application integration is in p
 - [Shared contracts](packages/contracts/README.md)
 - [Playback and downloads](p2/README.md)
 
+## Desktop frontend
+
+Person 1's React/Electron UI is implemented. See [frontend features](docs/16-person-1-implementation.md) and [queue/Connect audit](docs/21-queue-connect-menu-audit.md). Backend modules exist but are not yet connected to the prototype.
+
+After installing dependencies:
+
+```powershell
+npm run setup:desktop
+npm run build
+npm run desktop
+```
+
+Windows shortcut: run `.\launch.ps1`. It finds Node on PATH or the existing Codex runtime. Browser development: `npm run dev`. The UI uses real online metadata/artwork and preview audio; full-track playback, downloads and cloud synchronization are not integrated into the UI yet.
+
 ## Development
 
 Use Node 24, npm 11, Docker Desktop (Linux containers), and Supabase CLI 2.118.0.
@@ -42,7 +56,7 @@ checks upgrading populated Part 1 data in a disposable local database.
 - `@fyspoti/library`: Supabase adapter and in-memory authentication helper.
 - `services/cloud`: Supabase configuration, migrations and fixture seed policy.
 
-Run `npm run build` before consuming workspace packages. Each package exports compiled
+`npm run build` builds both workspace packages and the desktop frontend. Use `npm run build:packages` or `npm run build:frontend` to build either independently. Run `npm run build:packages` before consuming workspace packages. Each package exports compiled
 JavaScript and TypeScript declarations. `npm run typecheck` builds them and checks the
 test harness. `npm test` runs deterministic API/error/pagination tests.
 

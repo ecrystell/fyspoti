@@ -1,0 +1,28 @@
+/* Original app styles derived from measured screenshot geometry and static package tokens.
+   Evidence and scope: docs/18-spotify-rea-investigation.md. No upstream stylesheet is imported. */
+:root{--surface:#121212;--elevated:#1f1f1f;--highlight:#2a2a2a;--subdued:#b3b3b3;--accent:#1ed760;--control-small:32px;--radius-panel:8px;--spacing-base:16px}
+.library,.right-panel{position:relative;background:var(--surface);border-radius:var(--radius-panel)}
+.content{border-radius:var(--radius-panel)}
+.workspace{grid-template-columns:minmax(240px,var(--library-width)) minmax(350px,1fr) minmax(240px,var(--detail-width));gap:10px}
+.workspace.no-panel{grid-template-columns:minmax(240px,var(--library-width)) minmax(350px,1fr)}
+.panel-resize{position:absolute;top:0;bottom:0;width:8px;z-index:8;cursor:col-resize;touch-action:none}
+.panel-resize:hover,.panel-resize:focus-visible{background:#ffffff30;outline:0}
+.left-resize{right:0}.right-resize{left:0}
+.icon{transition:background .15s ease,color .15s ease,transform .15s ease}
+.active{color:var(--accent)!important}.green-play,.floating{background:var(--accent)}
+.green-play:hover{background:#3be477}.green-play:active{background:#1abc54;transform:scale(.98)}
+.library-item:hover{background:var(--elevated)}.library-item.selected{background:var(--highlight)}
+.library-item span,p,.card span,.song span,.timeline{color:var(--subdued)}
+.dialog{width:min(524px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;border-radius:8px;padding:24px;background:#282828}
+.dialog:has(.image-upload){display:grid;grid-template-columns:180px minmax(0,1fr);column-gap:16px}
+.dialog>.panel-title{grid-column:1/-1}.dialog .image-upload{grid-column:1;grid-row:2/5;width:180px;height:180px;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#202020;box-shadow:0 4px 20px #0005;cursor:pointer;overflow:hidden;border-radius:4px}
+.image-upload img{width:100%;height:100%}.image-upload span{position:absolute;bottom:15px;background:#0009;padding:4px 10px;border-radius:4px}.image-upload input{position:absolute;inset:0;opacity:0;cursor:pointer;margin:0;width:100%;height:100%}
+.dialog>input,.dialog>textarea,.dialog>.save{grid-column:2}.dialog input:not([type=file]){height:40px;font-size:14px;padding:0 12px;background:#ffffff1a;border:1px solid transparent;border-radius:4px;margin-top:0}
+.dialog input:focus,.dialog textarea:focus{background:#333;border-color:#535353;outline:0}.dialog textarea{margin-top:0;min-height:90px}.dialog .save{justify-self:end;margin-top:0}
+.profile-picture{overflow:hidden;padding:0}.profile-picture img{width:100%;height:100%;border-radius:50%}
+.tr{border:1px solid transparent;border-radius:4px}.tr:hover:not(.th){background:#ffffff1a}.tr.selected{background:#ffffff24}
+.transport .icon.active{position:relative}.transport .icon.active:after{content:'';height:4px;width:4px;border-radius:50%;background:var(--accent);position:absolute;bottom:0;left:calc(50% - 2px)}
+input[type=range]{accent-color:#fff}input[type=range]:hover{accent-color:var(--accent)}
+@media(max-width:1300px){.workspace{grid-template-columns:280px minmax(350px,1fr) 300px}.workspace.no-panel{grid-template-columns:280px minmax(350px,1fr)}}
+@media(max-width:1050px){.workspace,.workspace.no-panel{grid-template-columns:240px minmax(350px,1fr)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

@@ -1,16 +1,22 @@
 {
   "name": "fyspoti",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=24 <25" },
-  "workspaces": ["packages/*", "services/cloud"],
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "workspaces": [
+    "packages/*",
+    "services/cloud"
+  ],
   "scripts": {
-    "build": "tsc -b",
-    "typecheck": "tsc -b && tsc -p tsconfig.tests.json",
-    "pretest": "npm run build",
+    "build": "npm run build:packages && npm run build:frontend",
+    "typecheck": "tsc -b && tsc -p tsconfig.frontend.json && tsc -p tsconfig.tests.json",
+    "pretest": "npm run build:packages",
     "test": "vitest run --config vitest.config.ts",
     "check": "npm run typecheck && npm test && npm run check --workspace @fyspoti/contracts",
+    "import:preview": "npm run build --silent && node scripts/spotify-import-preview.mjs",
     "test:integration": "node scripts/run-local-integration.mjs",
     "test:migrations": "node scripts/check-library-upgrade.mjs",
     "pretest:integration": "npm run build",
@@ -19,11 +25,26 @@
     "cloud:start": "supabase start --workdir services/cloud",
     "cloud:reset": "supabase db reset --local --workdir services/cloud",
     "cloud:stop": "supabase stop --workdir services/cloud",
-    "cloud:advisors": "supabase db advisors --local --workdir services/cloud"
+    "cloud:advisors": "supabase db advisors --local --workdir services/cloud",
+    "dev": "vite --host 127.0.0.1",
+    "desktop": "electron .",
+    "setup:desktop": "node node_modules/electron/install.js",
+    "build:packages": "tsc -b",
+    "build:frontend": "tsc -p tsconfig.frontend.json && vite build"
   },
   "devDependencies": {
     "@types/node": "24.19.2",
     "typescript": "7.0.2",
-    "vitest": "5.0.5"
-  }
+    "vitest": "5.0.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "electron": "45.2.1",
+    "vite": "6.4.5"
+  },
+  "dependencies": {
+    "lucide-react": "0.468.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "main": "electron/main.cjs"
 }
