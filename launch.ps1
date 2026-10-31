@@ -14,4 +14,10 @@ Write-Host "Building Fyspoti using $nodeRuntime"
 if ($LASTEXITCODE -ne 0) { throw 'TypeScript build failed' }
 & $nodeRuntime 'node_modules/vite/bin/vite.js' build
 if ($LASTEXITCODE -ne 0) { throw 'Vite build failed' }
+foreach ($entry in 'main', 'preload') {
+    & $nodeRuntime 'node_modules/vite/bin/vite.js' build -c vite.electron.config.ts --mode $entry
+    if ($LASTEXITCODE -ne 0) { throw "Electron $entry build failed" }
+}
+# VS Code terminals set this, which makes electron.exe start as plain Node.
+Remove-Item Env:ELECTRON_RUN_AS_NODE -ErrorAction SilentlyContinue
 if (-not $BuildOnly) { & '.\node_modules\electron\dist\electron.exe' . }

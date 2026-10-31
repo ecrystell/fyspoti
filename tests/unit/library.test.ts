@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
-import { LibraryError } from '@fyspoti/contracts';
-import { createLibrary, createMemoryClient, signInWithPassword } from '@fyspoti/library';
+import { AppError, LibraryError } from '@fyspoti/contracts';
+import { createLibrary, createLibraryApi, createMemoryClient, signInWithPassword } from '@fyspoti/library';
 import { fixtureTracks } from '../fixtures/tracks.js';
 
 const owner = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 const user = { id: owner, aud: 'authenticated', role: 'authenticated', email: 'synthetic@example.test', app_metadata: {}, user_metadata: {}, created_at: '2026-10-31T00:00:00Z' };
 const token = `${btoa('{}')}.${btoa(JSON.stringify({ sub: owner, exp: Math.floor(Date.now() / 1000) + 3600 }))}.test`;
-const row = { id, owner_id: owner, title: 'Example', visibility: 'private', created_at: '2026-10-31T00:00:00Z' };
+const row = { id, owner_id: owner, title: 'Example', visibility: 'private', created_at: '2026-10-31T00:00:00Z', revision: 1, deleted_at: null };
 
 function fakeClient(rest: (url: URL, init?: RequestInit) => Response | Promise<Response> = () => Response.json([])) {
   const fetcher = vi.fn<typeof fetch>(async (input, init) => {
@@ -37,12 +37,14 @@ describe('playlist library', () => {
 
   it('derives ownership from Auth and maps database fields into shared contracts', async () => {
     const { client } = fakeClient((_url, init) => {
-      expect(JSON.parse(init!.body as string)).toEqual({ title: 'Example', owner_id: owner });
+      const request = JSON.parse(init!.body as string);
+      expect(request).toMatchObject({ operation: 'create', payload: { title: 'Example', accountId: owner } });
+      expect(request.mutation_id).toMatch(/^[0-9a-f-]{36}$/);
       return Response.json(row);
     });
     await signInWithPassword(client, user.email, 'password');
     expect(await createLibrary(client).createPlaylist('  Example  ')).toEqual({
-      id, ownerId: owner, title: 'Example', visibility: 'private', createdAt: row.created_at,
+      id, ownerId: owner, title: 'Example', visibility: 'private', createdAt: row.created_at, revision: 1,
     });
   });
 
@@ -111,5 +113,31 @@ describe('playlist library', () => {
     expect(() => createMemoryClient('https://example.supabase.co', 'sb_secret_example')).toThrow(LibraryError);
     const key = `${btoa('{}')}.${btoa(JSON.stringify({ role: 'service_role' }))}.test`;
     expect(() => createMemoryClient('https://example.supabase.co', key)).toThrow(LibraryError);
+  });
+
+  it('returns serializable shared errors for facade validation failures', async () => {
+    const { client, fetcher } = fakeClient();
+    await signInWithPassword(client, user.email, 'password');
+    const api = createLibraryApi(client);
+    const response = await api.renamePlaylist(id, 'New title', { mutationId: id, expectedRevision: 0 });
+    expect(response).toMatchObject({ ok: false, error: { code: 'INVALID_ARGUMENT' } });
+    if (!response.ok) expect(AppError.safeParse(response.error).success).toBe(true);
+    expect(fetcher.mock.calls.filter(([url]) => String(url).includes('/rest/v1'))).toHaveLength(0);
+  });
+
+  it('refuses to use an API bound to a different account', async () => {
+    const { client, fetcher } = fakeClient();
+    await signInWithPassword(client, user.email, 'password');
+    expect(await createLibraryApi(client, { accountId: id }).createPlaylist('Private', id)).toMatchObject({ ok: false, error: { code: 'AUTH_REQUIRED' } });
+    expect(fetcher.mock.calls.filter(([url]) => String(url).includes('/rest/v1'))).toHaveLength(0);
+  });
+  it('keeps Part 1 metadata bounds when consuming a P4 Track', async () => {
+    const { client, fetcher } = fakeClient();
+    await signInWithPassword(client, user.email, 'password');
+    const track = { id: 'track-harbor-studio', title: 'Harbor Lights', artists: [{ id: 'artist-fixture', name: '   ' }],
+      albumId: null, durationMs: 1000, explicit: 'unknown' as const, versionFlags: [], artwork: [], providerRefs: [{ provider: 'fixture', id: 't1' }] };
+    const result = await createLibraryApi(client).setTrackLiked(track, true, id);
+    expect(result).toMatchObject({ ok: false, error: { code: 'INVALID_ARGUMENT' } });
+    expect(fetcher.mock.calls.filter(([url]) => String(url).includes('/rest/v1'))).toHaveLength(0);
   });
 });

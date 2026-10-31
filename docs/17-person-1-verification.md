@@ -18,3 +18,30 @@ REA pass: production build passed; browser verified keyboard panel resizing (368
 
 Launcher fix: launch.ps1 now checks PATH, then the existing Codex-bundled Node runtime. Added -BuildOnly for verification without opening a window.
 
+
+
+## Team integration pass
+
+2026-10-31, after merging `b5f8446`. Details in [22-person-1-integration.md](22-person-1-integration.md).
+
+Passed:
+
+- Typecheck: `tsc -b`, frontend, tests and the new `tsconfig.electron.json`.
+- Unit tests: 41 root tests, including 4 new adapter tests (contract-valid tracks, no stream URL inside `Track`, provisional IDs shared with the importer, cache schema rejection). Also 17 contracts tests and 6 P2 tests.
+- Builds: renderer, Electron main and Electron preload. The preload requires only `electron`.
+- Live Electron run, driven over the DevTools protocol:
+  - `window.p2` and `window.desktop` are exposed and `require` is absent.
+  - Clicking a card played the preview through P2: Pause shown, 0:02 of 0:30.
+  - The Queue panel listed 8 P2 queue items.
+  - After a restart, P2 restored the paused session (track and position).
+  - Existing local playlists were migrated to UUID track IDs, and "all time" still lists its 8 songs.
+  - The Spotify import page previewed a synthetic export ZIP: 2 playlists, 1 liked song, 5 tracks, 1 duplicate kept, 1 episode skipped, 1 saved album not imported. A decoy account file was ignored.
+  - Confirming without a cloud session opened the sign-in dialog.
+  - No page exceptions and no CSP violations were logged.
+
+Blocked or not verified:
+
+- **Cloud round-trip is blocked:** Docker and the Supabase CLI are not installed on this machine. Sign-in, cloud playlist listing, add-to-cloud and applying an import have not run against a database. They are only typechecked against P3's adapter.
+- `npm` is not on PATH here. The `npm run check` steps were run directly with the bundled Node 24.22.1.
+- This shell inherits `ELECTRON_RUN_AS_NODE=1` from VS Code, which stops Electron from starting. `launch.ps1` now clears it.
+- Not verified: local-file playback, downloaded-artifact playback, OS media keys, DPI variants.

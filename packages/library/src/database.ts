@@ -1,4 +1,4 @@
-// M0 database boundary, intentionally separate from provider-independent contracts.
+// Database boundary, intentionally separate from provider-independent contracts.
 // Keep aligned with services/cloud/supabase/migrations; integration tests cover mapping.
 export type PlaylistRow = {
   id: string;
@@ -6,6 +6,8 @@ export type PlaylistRow = {
   title: string;
   visibility: 'private';
   created_at: string;
+  revision: number;
+  deleted_at: string | null;
 };
 
 export type ItemRow = {
@@ -18,9 +20,21 @@ export type ItemRow = {
   snapshot_duration_ms: number;
 };
 
+export type LikeRow = {
+  id: string; owner_id: string; track_id: string; liked: boolean; revision: number;
+  snapshot_title: string; snapshot_artist_names: string[]; snapshot_duration_ms: number;
+};
+export type Json = null | boolean | number | string | Json[] | { [key: string]: Json | undefined };
+
 export interface Database {
   public: {
     Tables: {
+      track_likes: {
+        Row: LikeRow;
+        Insert: Omit<LikeRow, 'id'> & { id?: string };
+        Update: Partial<LikeRow>;
+        Relationships: [];
+      };
       playlists: {
         Row: PlaylistRow;
         Insert: { id?: string; owner_id?: string; title: string; visibility?: 'private'; created_at?: string };
@@ -41,7 +55,12 @@ export interface Database {
       };
     };
     Views: { [_ in never]: never };
-    Functions: { [_ in never]: never };
+    Functions: {
+      library_mutate: {
+        Args: { operation: string; mutation_id: string; payload: Json };
+        Returns: Json;
+      };
+    };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };
   };

@@ -128,7 +128,7 @@ export class Player {
     else if (event.type === 'playing') { this.lastClock = Date.now(); this.update({ status: 'playing' }); }
     else if (event.type === 'buffering') { this.accountTime(); this.update({ status: 'buffering' }); }
     else if (event.type === 'ended') { if (this.state.repeat === 'one' && this.state.currentItemId) void this.playItem(this.state.currentItemId); else void this.next(); }
-    else {
+    else if (event.type === 'error') {
       this.accountTime();
       if (this.recoveryAttempts < 1 && this.state.currentItemId) {
         this.recoveryAttempts++;

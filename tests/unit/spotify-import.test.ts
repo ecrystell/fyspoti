@@ -65,7 +65,7 @@ function memoryLibrary(fail: (call: number) => LibraryError | null = () => null)
   let calls = 0;
   const library: Library = {
     async createPlaylist(title) {
-      const playlist: Playlist = { id: `playlist-${playlists.length}`, ownerId: 'owner', title, visibility: 'private', createdAt: '2026-10-31T00:00:00Z' };
+      const playlist: Playlist = { id: `playlist-${playlists.length}`, ownerId: 'owner', title, visibility: 'private', createdAt: '2026-10-31T00:00:00Z', revision: 1 };
       playlists.push(playlist);
       return playlist;
     },
@@ -212,17 +212,31 @@ describe('applying the import through the real library adapter', () => {
     const playlistId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
     const user = { id: owner, aud: 'authenticated', role: 'authenticated', email: 'synthetic@example.test', app_metadata: {}, user_metadata: {}, created_at: '2026-10-31T00:00:00Z' };
     const token = `${btoa('{}')}.${btoa(JSON.stringify({ sub: owner, exp: Math.floor(Date.now() / 1000) + 3600 }))}.test`;
-    const row = { id: playlistId, owner_id: owner, title: 'Road Trip', visibility: 'private', created_at: '2026-10-31T00:00:00Z' };
+    const row = { id: playlistId, owner_id: owner, title: 'Road Trip', visibility: 'private', created_at: '2026-10-31T00:00:00Z', revision: 1, deleted_at: null };
     const written: Record<string, unknown>[] = [];
 
     const client = createMemoryClient('http://127.0.0.1:54321', 'synthetic-public-key', async (input, init) => {
       const url = new URL(typeof input === 'string' ? input : input instanceof URL ? input : input.url);
       if (url.pathname.endsWith('/token')) return Response.json({ access_token: token, refresh_token: 'synthetic-refresh', token_type: 'bearer', expires_in: 3600, user });
       if (url.pathname.endsWith('/user')) return Response.json(user);
-      if (url.pathname.endsWith('/playlist_items')) {
-        const body = JSON.parse(init!.body as string) as Record<string, unknown>;
-        written.push(body);
-        return Response.json({ id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', ...body });
+      if (url.pathname.endsWith('/rpc/library_mutate')) {
+        const body = JSON.parse(init!.body as string) as { operation: string; mutation_id: string; payload: AddPlaylistItemInput & { accountId: string; playlistId: string; expectedRevision: number; title?: string } };
+        expect(body.mutation_id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+        expect(body.payload.accountId).toBe(owner);
+        if (body.operation === 'create') return Response.json(row);
+        expect(body.operation).toBe('insert_item');
+        expect(body.payload.playlistId).toBe(playlistId);
+        expect(body.payload.expectedRevision).toBe(row.revision);
+        const entry = {
+          id: `cccccccc-cccc-4ccc-8ccc-${String(written.length).padStart(12, '0')}`,
+          playlist_id: playlistId, track_id: body.payload.trackId, ordering_key: body.payload.orderingKey,
+          snapshot_title: body.payload.metadataSnapshot.title,
+          snapshot_artist_names: body.payload.metadataSnapshot.artistNames,
+          snapshot_duration_ms: body.payload.metadataSnapshot.durationMs,
+        };
+        written.push(entry);
+        row.revision++;
+        return Response.json({ playlist: row, item: entry });
       }
       return Response.json(row);
     });
