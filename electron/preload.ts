@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('desktop', {
     getAlbum: id => ipcRenderer.invoke('catalog:get-album', id),
     getArtist: id => ipcRenderer.invoke('catalog:get-artist', id),
     findCandidates: (id, hint) => ipcRenderer.invoke('catalog:find-candidates', id, hint),
+    topAlbums: (country, limit) => ipcRenderer.invoke('catalog:top-albums', country, limit),
   } satisfies CatalogBridge,
   playback: {
     session: () => ipcRenderer.invoke('playback:session'),

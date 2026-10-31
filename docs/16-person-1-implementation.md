@@ -93,3 +93,11 @@ Original synthwave visual style replacing the Spotify look, scoped so P3's Cloud
 ## Hackathon readiness
 
 Clean-room cleanup (Spotify reference data, links and seed content removed), sourced README submission section, [third-party notices](../THIRD_PARTY_NOTICES.md) and the [live demo script](26-demo-script.md).
+
+
+## Saved albums and artists
+
+Catalog album and artist pages have a Save to Your Library (+/✓) button. The sidebar Albums and Artists filters list saved P4 catalog entities (real covers, opening `calbum/` and `cartist/` pages, library search and Recents/Title sort), and All shows them after playlists. Saved per device (`fy-saved-albums`, `fy-saved-artists`). The browser build without P4 keeps a de-duplicated featured fallback.
+
+
+Featured and Profile cards open the real P4 album or artist: search by artist and album, then rank exact title first, no version tag unless asked (so instrumental or remix editions lose ties), and album before EP before single. Artist names match when one contains the other ("underscores & gabby start" and "underscores"). Results are cached per session. No match shows "Album not found in the catalog" and opens the old single-track page. Verified 7 of 8 Featured albums (Haiz - EP is not in the catalog).

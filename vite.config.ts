@@ -19,6 +19,7 @@ function contentSecurityPolicy(cloudUrl: string | undefined): Plugin {
 
 export default defineConfig(({ mode }) => ({
   base: './',
+  server: { proxy: { '/api/apple-charts': { target: 'https://rss.marketingtools.apple.com', changeOrigin: true, rewrite: path => path.replace(/^\/api\/apple-charts/, '/api/v2') } } },
   plugins: [contentSecurityPolicy(loadEnv(mode, process.cwd()).VITE_FYSPOTI_CLOUD_URL)],
   // Match tsconfig.frontend.json (react-jsx); Vite does not read that file itself.
   esbuild: { jsx: 'automatic' },
