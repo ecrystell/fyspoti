@@ -29,10 +29,10 @@ Owner: P4. Evidence and caveats are in the [provider spike](16-provider-spike.md
 | Discography | **Tested** | Untested | – | – | Untested | – |
 | Artwork | **Tested** | Thumbnails, untested | – | Varies | Yes | – |
 | Credits | Untested | No | – | – | Partial | – |
-| Charts | No | **Failed** (parser error) | Sitewide tested | – | Trending tested | – |
-| New releases | No | Untested | **Tested** | – | – | – |
-| Genres and moods | Genre names | Moods tested | Untested | – | Tags | – |
-| Related artists | No | Untested | Untested | – | – | – |
+| Charts | No | `get_charts` **failed**. Chart playlists on Home work. | Sitewide tested | – | Trending tested | – |
+| New releases | No | **Tested**, on Home | **Tested** | – | – | – |
+| Genres and moods | Genre names | **Tested**, 32 categories | Untested | – | Tags | – |
+| Related artists | No | **Tested**, 10 | Untested | – | – | – |
 | Radio | No | **Tested**, 50 tracks | – | – | – | – |
 | Popular tracks per artist | No | Untested | **Tested** | – | – | – |
 | Streaming with seek | – | **Tested** on CC BY | – | **Tested** | **Tested** | – |
@@ -44,8 +44,8 @@ Owner: P4. Evidence and caveats are in the [provider spike](16-provider-spike.md
 | Feature | Status | Plan |
 | --- | --- | --- |
 | Mainstream catalog | Depends entirely on the YouTube exception | If YouTube fails, only the fallback catalog remains. Show that honestly. |
-| Charts | YouTube Music parser failed | Use ListenBrainz sitewide data and label it accordingly. |
-| Related tracks and artists | Untested from an adopted source | Check in task 11 or 12, or fall back to YouTube Music radio. |
+| Charts | `get_charts` failed | Chart playlists from Home are used. ListenBrainz waits until its terms are read. |
+| Related tracks and artists | Works through YouTube Music | Live tested. Radio is empty when the explicit filter is on (doc 22). |
 | Explicit filtering | Data is missing for many recordings | Filter fails closed. `unknown` is hidden when the setting is on. |
 | Credits | Untested | Check in task 6. |
 | Lyrics search | No authorized index | Later, as doc 13 allows. |

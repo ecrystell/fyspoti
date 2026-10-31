@@ -4,7 +4,7 @@ import { mkdtemp, mkdir, readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 
-test('local email → cloud library → encrypted restart → account isolation', async () => {
+test('local email bridge → encrypted player restart → account isolation', async () => {
   test.setTimeout(240000);
   const url = process.env.SUPABASE_URL!; const key = process.env.SUPABASE_PUBLISHABLE_KEY!; const adminKey = process.env.SUPABASE_TEST_ADMIN_KEY!;
   const mailUrl = process.env.FYSPOTI_TEST_MAIL_URL!;
@@ -58,84 +58,45 @@ test('local email → cloud library → encrypted restart → account isolation'
     }, { timeout: 15000 }).toBe(true);
     return code;
   }
-  async function accountMenu(page: Page) { await page.getByTitle('Account', {exact:true}).click(); }
-  async function signIn(page: Page, email: string) {
-    console.log('Opening P1 account menu');
-    await accountMenu(page); await page.getByRole('button',{name:'Sign in to cloud library',exact:true}).click();
-    console.log('P1 email dialog opened');
-    const dialog=page.getByRole('dialog',{name:'Sign in to Fyspoti'});
-    await dialog.getByLabel('Email address').fill(email); await dialog.getByRole('button',{name:'Send email code'}).click();
-    await expect(dialog.getByLabel('Email code')).toBeVisible(); await dialog.getByLabel('Email code').fill(await codeFor(email));
-    console.log('Local email code received');
-    await dialog.getByRole('button',{name:'Verify code'}).click();
-    await expect.poll(async()=> (await page.evaluate(()=>window.desktop!.cloud!.getState())).account.phase).toBe('authenticated');
-    await expect(dialog).toHaveCount(0);
+  async function signIn(page:Page,email:string){
+    const requested=await page.evaluate(email=>window.desktop!.cloud!.requestEmailCode(email),email);expect(requested.ok).toBe(true);
+    const code=await codeFor(email);const verified=await page.evaluate(({email,code})=>window.desktop!.cloud!.verifyEmailCode(email,code),{email,code});expect(verified.ok).toBe(true);
   }
-  async function signOut(page: Page) {
-    await accountMenu(page); await page.getByRole('button',{name:/^Cloud library:/}).click();
-    await page.getByRole('dialog',{name:'cloud',exact:true}).getByRole('button',{name:'Sign out',exact:true}).click();
-    await expect.poll(async()=> (await page.evaluate(()=>window.desktop!.cloud!.getState())).account.userId).toBeNull();
-  }
-  async function search(page: Page) { await page.getByTitle('Browse',{exact:true}).click(); }
-  function song(page: Page,title='Fixture Sunrise'){return page.locator('main .tr:not(.th)').filter({hasText:title});}
-  async function selectPlaylist(page: Page,title='Private A playlist'){await page.locator('.library-scroll .library-item').filter({hasText:title}).click();}
-  async function createPlaylist(page:Page,title:string){
-    await page.getByRole('button',{name:'Create playlist',exact:true}).click();
-    await expect(page.getByRole('heading',{name:/^My Playlist #/})).toBeVisible();
-    await page.getByRole('button',{name:'Name & details',exact:true}).click();
-    const dialog=page.getByRole('dialog',{name:'playlist',exact:true});await dialog.getByLabel('Name',{exact:true}).fill(title);
-    await dialog.getByRole('button',{name:'Save',exact:true}).click(); await expect(page.getByRole('heading',{name:title,exact:true})).toBeVisible();
-  }
-  async function addTo(page:Page,title:string){
-    await page.getByRole('menuitem',{name:'Add to playlist',exact:true}).click();
-    await page.getByRole('menu',{name:'Add to playlist',exact:true}).getByTitle(title,{exact:true}).click();
-    await expect(page.getByRole('menu',{name:'track',exact:true})).toHaveCount(0);
-  }
-  async function queueLength(page:Page){return page.evaluate(async()=>{const api=window.desktop!.playback!;const scope=await api.session();if(!scope.ok)return -1;const saved=await api.load(scope.value.generation);return saved.ok?saved.value?.state.queue.length:-1;});}
-  try {
+  async function signOut(page:Page){expect((await page.evaluate(()=>window.desktop!.cloud!.signOut())).ok).toBe(true);}
+  async function queue(page:Page){return page.evaluate(async()=>{const api=window.desktop!.playback!,session=await api.session();if(!session.ok)throw Error(session.error.message);const snapshot=await api.load(session.value.generation);if(!snapshot.ok)throw Error(snapshot.error.message);return {session:session.value,snapshot:snapshot.value};});}
+  async function action(page:Page,value:import('@fyspoti/contracts').LibraryAction){return page.evaluate(async value=>{const result=await window.desktop!.cloud!.run(value);if(!result.ok)throw Error(result.error.message);return result.value;},value);}
+  try{
     let launched=await launch();application=launched.app;let page=launched.page;
-    await page.evaluate(()=>{localStorage.setItem('fy-lists',JSON.stringify([{id:'prototype-private',name:'Do not upload',tracks:[0]}]));localStorage.setItem('fy-liked','[0]');});
-    await page.screenshot({path:'work/review/p1-home.png'});
     const firstSignInAt=Date.now();await signIn(page,emails[0]!);
-    await expect(page.getByText('Do not upload')).toHaveCount(0);
     const state=await page.evaluate(()=>window.desktop!.cloud!.getState());expect(state.account.persistent).toBe(true);expect(state.library.playlists).toEqual([]);
-    await search(page);await song(page).getByRole('button',{name:'Save song',exact:true}).click();
-    await expect(song(page).locator('svg.lucide-check')).toBeVisible();
-    await createPlaylist(page,'Private A playlist');
-    for(let index=0;index<2;index++){await search(page);await song(page).getByRole('button',{name:'Track actions',exact:true}).click();await addTo(page,'Private A playlist');}
-    await selectPlaylist(page);await expect(page.locator('[data-item-id]')).toHaveCount(2);
-    await page.locator('[data-item-id]').first().getByTitle('Play track',{exact:true}).click();
-    await expect(page.locator('footer [data-playback-mode]')).toHaveText('Preview');
-    await expect(page.getByRole('button',{name:'Pause',exact:true})).toBeVisible();await page.getByRole('button',{name:'Pause',exact:true}).click();
-    expect(await queueLength(page)).toBe(2);
-    await createPlaylist(page,'Second destination');await selectPlaylist(page);await expect(page.locator('[data-item-id]')).toHaveCount(2);
-    await page.locator('[data-item-id]').first().getByRole('button',{name:'Track actions',exact:true}).click();await addTo(page,'Second destination');
-    expect(await page.evaluate(async()=>{const api=window.desktop!.cloud!,state=await api.getState(),id=state.library.playlists.find(p=>p.title==='Second destination')!.id;const result=await api.prepareQueue(id);return result.ok?result.value.items.length:-1;})).toBe(1);
-    await page.locator('[data-item-id]').first().getByRole('button',{name:'Track actions',exact:true}).click();
-    await page.getByRole('menuitem',{name:'Remove from this playlist',exact:true}).click();await expect(page.locator('[data-item-id]')).toHaveCount(1);expect(await queueLength(page)).toBe(2);
-    await accountMenu(page);await page.getByRole('button',{name:'Profile',exact:true}).click();await page.getByRole('button',{name:'Edit profile',exact:true}).click();
-    const profile=page.getByRole('dialog',{name:'profile',exact:true});await profile.getByLabel('Name',{exact:true}).fill('Listener A');await profile.getByRole('button',{name:'Save',exact:true}).click();
-    await expect(page.getByRole('heading',{name:'Listener A',exact:true})).toBeVisible();
-    expect((await readFile(path.join(userData,'accounts/session.enc'))).toString()).not.toMatch(/access_token|refresh_token/);
-    const queue=await readFile(path.join(userData,'accounts/queues',state.account.userId+'.enc'));expect(queue.toString()).not.toMatch(/Fixture Sunrise|itunes.apple.com/);
+    await expect.poll(async()=> (await queue(page)).snapshot?.state.queue.length??-1).toBe(0);
+    const track=await page.evaluate(()=>{const entries=JSON.parse(localStorage.getItem('fy-catalog-v2')||'[]') as {track:import('@fyspoti/contracts').Track}[];return entries.find(entry=>entry.track.title==='Fixture Sunrise')!.track;});
+    await action(page,{type:'like',track,liked:true});
+    const playlist=await action(page,{type:'create',title:'Private A playlist'}) as import('@fyspoti/contracts').Playlist;
+    expect((await page.evaluate(id=>window.desktop!.cloud!.load(id),playlist.id)).ok).toBe(true);
+    await action(page,{type:'append',playlistId:playlist.id,track});await action(page,{type:'append',playlistId:playlist.id,track});
+    const prepared=await page.evaluate(id=>window.desktop!.cloud!.prepareQueue(id),playlist.id);if(!prepared.ok)throw Error(prepared.error.message);
+    expect(prepared.value.items).toHaveLength(2);expect(prepared.value.items[0]!.id).not.toBe(prepared.value.items[1]!.id);
+    const items=prepared.value.items;const scope=(await queue(page)).session;
+    const saved=await page.evaluate(async({generation,items})=>window.desktop!.playback!.save(generation,{state:{generation:1,status:'paused',currentItemId:items[0]!.id,queue:items,positionMs:0,durationMs:214000,volume:.4,repeat:'off',shuffle:false},modes:{},upcomingIds:[items[1]!.id]}),{generation:scope.generation,items});expect(saved.ok).toBe(true);
+    const profile=await page.evaluate(()=>{const api=window.desktop!.cloud!;return api.getState().then(state=>api.updateDisplayName('Listener A',{mutationId:crypto.randomUUID(),expectedRevision:state.profile!.revision}));});expect(profile.ok).toBe(true);
+    const ciphertext=await readFile(path.join(userData,'accounts/session.enc'));expect(ciphertext.toString()).not.toMatch(/access_token|refresh_token/);
+    const encrypted=await readFile(path.join(userData,'accounts/queues',state.account.userId+'.enc'));expect(encrypted.toString()).not.toMatch(/Fixture Sunrise|itunes.apple.com/);
     await application.close();application=null;launched=await launch();application=launched.app;page=launched.page;
     await expect(page.locator('footer .current-track')).toContainText('Fixture Sunrise');await expect(page.getByRole('button',{name:'Play',exact:true})).toBeVisible();
-    await expect(page.getByRole('button',{name:'Pause',exact:true})).toHaveCount(0);await selectPlaylist(page);await expect(page.locator('[data-item-id]')).toHaveCount(1);
-    expect(await page.evaluate(()=>localStorage.getItem('fy-lists'))).toContain('Do not upload');
+    expect((await queue(page)).snapshot!.state.queue).toHaveLength(2);
+    await page.getByRole('button',{name:'Play',exact:true}).click();await expect(page.getByRole('button',{name:'Pause',exact:true})).toBeVisible();await page.getByRole('button',{name:'Pause',exact:true}).click();
+    await expect.poll(async()=>Object.values((await queue(page)).snapshot!.modes)).toContain('preview');
+    const loaded=await page.evaluate(id=>window.desktop!.cloud!.load(id),playlist.id);expect(loaded.ok).toBe(true);
+    await action(page,{type:'remove',playlistId:playlist.id,itemId:items[0]!.id});expect((await queue(page)).snapshot!.state.queue).toHaveLength(2);
+    const current=await page.evaluate(()=>window.desktop!.cloud!.getState());expect(current.library.items).toHaveLength(1);expect(current.profile!.displayName).toBe('Listener A');
     await signOut(page);await expect(page.locator('footer .current-track')).not.toContainText('Fixture Sunrise');expect(await page.evaluate(()=>navigator.mediaSession.metadata)).toBeNull();
-    await search(page);await song(page,'Fixture Evening').getByTitle('Play track',{exact:true}).click();
-    await expect(page.locator('footer [data-playback-mode]')).toHaveText('Full track');await page.getByRole('button',{name:'Pause',exact:true}).click();
-    await signIn(page,emails[1]!);await expect(page.locator('footer .current-track')).toContainText('Choose a song');
-    const otherState=await page.evaluate(()=>window.desktop!.cloud!.getState());expect(otherState.profile?.displayName).toBe('Listener');expect(otherState.library.playlists).toEqual([]);expect(otherState.library.likedTracks).toEqual([]);
-    await page.screenshot({path:'work/review/p1-empty-account.png'});await signOut(page);
-    await expect.poll(()=>Date.now(),{timeout:65000,intervals:[1000]}).toBeGreaterThanOrEqual(firstSignInAt+61000);await signIn(page,emails[0]!);
-    await expect(page.locator('footer .current-track')).toContainText('Fixture Sunrise');
-    await page.getByRole('separator',{name:'Resize library',exact:true}).focus();await page.keyboard.press('ArrowRight');
-    await selectPlaylist(page);await page.getByRole('button',{name:'Name & details',exact:true}).click();const rename=page.getByRole('dialog',{name:'playlist',exact:true});
-    await rename.getByLabel('Name',{exact:true}).fill('A long private playlist title in the original P1 interface');await page.keyboard.press('Tab');expect(await page.evaluate(()=>Boolean(document.activeElement?.closest('[role="dialog"]')))).toBe(true);
-    await rename.getByRole('button',{name:'Save',exact:true}).click();await expect(page.getByRole('heading',{name:'A long private playlist title in the original P1 interface',exact:true})).toBeVisible();
-    await page.getByRole('button',{name:'Search in Your Library',exact:true}).click();await page.getByLabel('Search library',{exact:true}).fill('no match');await expect(page.locator('.library-scroll .library-item').filter({hasText:'A long private'})).toHaveCount(0);await page.getByLabel('Search library',{exact:true}).fill('');
-    await page.screenshot({path:'work/review/p1-playlist.png'});await page.setViewportSize({width:1050,height:760});await page.screenshot({path:'work/review/p1-narrow.png'});await signOut(page);
+    expect((await queue(page)).snapshot).toBeNull();
+    await signIn(page,emails[1]!);await expect.poll(async()=> (await queue(page)).snapshot?.state.queue.length??-1).toBe(0);
+    const b=await page.evaluate(()=>window.desktop!.cloud!.getState());expect(b.library.playlists).toEqual([]);expect(b.library.likedTracks).toEqual([]);expect(b.profile!.displayName).toBe('Listener');
+    await signOut(page);await expect.poll(()=>Date.now(),{timeout:65000,intervals:[1000]}).toBeGreaterThanOrEqual(firstSignInAt+61000);await signIn(page,emails[0]!);
+    await expect(page.locator('footer .current-track')).toContainText('Fixture Sunrise');await expect(page.getByRole('button',{name:'Play',exact:true})).toBeVisible();
+    await page.screenshot({path:'work/review/pulled-ui.png'});await signOut(page);
   } finally {
     await application?.close();
     const users = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });

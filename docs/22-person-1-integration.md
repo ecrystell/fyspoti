@@ -69,3 +69,30 @@ Desktop playback and downloads now resolve through P2’s YouTube worker (`p2/.v
 
 
 Errors and their status: [24-person-1-error-log.md](24-person-1-error-log.md).
+
+## P4 catalog integration
+
+2026-10-31. P1's UI now uses P4's catalog (`packages/catalog`) in the desktop app.
+
+| Part | How |
+| --- | --- |
+| Host | `electron/catalog.ts` runs `createCatalog` with P4's YouTube Music worker (`services/catalog-worker/worker.py`) in the main process. Python comes from `FYSPOTI_CATALOG_PYTHON`, otherwise P2's `p2/.venv`, which already pins `ytmusicapi==1.12.1` |
+| IPC | `catalog:search`, `catalog:get-track`, `catalog:get-album`, `catalog:get-artist`, `catalog:find-candidates`. Each checks that the sender is the app's main frame and validates UUID IDs, query length (1–200), cursor and `TrackHint`. Results cross IPC as `Result` values. Tests: `tests/unit/desktop-catalog-ipc.test.ts` |
+| Bridge | `window.desktop.catalog` (`CatalogBridge` in `src/services/desktop-catalog.ts`, kept out of `packages/contracts` to avoid a contract change). `@fyspoti/*`, `zod` and `fflate` are bundled into `dist-electron/main.cjs`, because the packages are ESM-only |
+| Search | Debounced (350 ms) catalog search with Songs, Artists and Albums sections and the All/Songs/Albums/Artists chips. Shows a loading state, an error with Retry for each error code, and `No results found for "…"`. Stale replies are dropped. The browser build keeps the loaded-catalog filter |
+| Album page | `calbum/<id>`: `getAlbum` plus `getTrack` for each track. Hero with kind, artists, year and count. Play, shuffle, download and more options. Rows fall back to the album cover, and long titles shrink and wrap |
+| Artist page | `cartist/<id>`: `getArtist`, plus that artist's songs from `search(name)`. A full discography needs a P4 contract change |
+| Registry | Catalog tracks are added to a per-device registry (`fy-catalog-seen`, capped at 500), so play, queue, like, add-to-playlist and download all work. "Go to artist/album" opens catalog pages for catalog tracks |
+
+Our UI shows in the desktop app only when built with `VITE_FYSPOTI_DESKTOP_MODE=prototype`. P3's `CloudApp` is the default (see the decision noted after merge `caca34a`).
+
+Not done:
+
+- **Match choice and correction** (P4's request). Desktop playback resolves audio through P2's own matcher, not P4's `findCandidates`, so choosing or correcting a match in the UI would not change what plays. This needs P2 to resolve from P4's accepted candidate first. `findCandidates` is bridged and ready.
+- Recommendations on Home (P4 task 12 is not built).
+- Search paging beyond the first page (14 songs, 4 albums, 2 artists).
+
+Requests:
+
+- **P4:** update "Connected to the app" in [22-catalog-core.md](22-catalog-core.md). Look at the artist credit in E5.
+- **P2:** resolve playback from P4's accepted candidate, so the match UI can be built.

@@ -4,8 +4,10 @@ Windows music application built by a four-person team. Implemented foundations i
 Person 3's secure cloud playlists, Person 2's playback/download module, and Person 4's
 provider spike and draft catalog contracts. Full application integration is in progress.
 
-The Electron app uses P1's original implemented UI, with P3's account-library
-bindings and P2's player behind it. Queues are encrypted per account and restore paused.
+The Electron app uses the pulled P1 synthwave UI and P4 catalog/search updates.
+P3's account services and encrypted queues are preserved behind the bridge; the
+incoming renderer's personal-library/account controls still need those bindings.
+P2 playback uses the scoped service hook. Queues restore paused.
 Full-track source failures automatically use an available, labelled preview.
 See [unified desktop handoff](docs/23-person-3-unified-playback.md).
 The browser demo (`npm run dev`) stays separate; the old desktop prototype switch

@@ -1,5 +1,21 @@
 # Person 3 — Part 2C: unified account library and playback
 
+## UI-precedence merge update
+
+The merge with `f617991` deliberately takes the pulled P1 synthwave renderer,
+including its catalog/search and album/artist updates, over the local account UI
+bindings. The obsolete CloudApp selector is removed so that pulled UI renders.
+P3's account services, encrypted queues, contracts and helper bindings remain in
+the repository. The incoming renderer's playback hook uses the scoped bridge;
+legacy device-wide playback/download handlers remain blocked in this host.
+
+The incoming UI currently retains its prototype personal-library/password-login
+integration. Reattaching the email-code account and cloud-library controls to that
+new renderer is pending; this merge does not claim that UI journey is still wired.
+The Electron account test now verifies local email, library writes and queue
+isolation through the service bridge. The browser and layout checks exercise the
+pulled UI. Earlier UI-specific validation below describes the pre-merge version.
+
 P1's original implemented `App` in `src/main.tsx` is the desktop and browser
 interface, including its Home/release card, account menu, sidebar views, context
 menus, profile/edit dialogs, transport and Queue/Connect panels. Its original

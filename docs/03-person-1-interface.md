@@ -81,3 +81,8 @@ See [desktop-derived track and playlist menus](23-context-menus.md).
 ## Error log
 
 See [errors seen during integration, causes and status](24-person-1-error-log.md).
+
+
+## Synthwave theme
+
+Original synthwave visual style replacing the Spotify look, scoped so P3's CloudApp is unaffected: [25-person-1-synthwave-theme.md](25-person-1-synthwave-theme.md).

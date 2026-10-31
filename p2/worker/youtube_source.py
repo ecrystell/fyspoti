@@ -8,6 +8,8 @@ import re
 import subprocess
 import sys
 import time
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 import truststore
@@ -23,6 +25,20 @@ def find_video(request):
     return choose_video(request, hits)
 
 
+def wait_until_servable(url, timeout=10):
+    # Freshly signed googlevideo URLs answer 403 for a second or two. The renderer's
+    # audio element gives up on the first 403, so only hand over a URL that serves bytes.
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers={"Range": "bytes=0-0"}), timeout=5):
+                return
+        except urllib.error.HTTPError as error:
+            if error.code != 403 or time.monotonic() >= deadline:
+                raise ValueError(f"Stream not servable (HTTP {error.code})") from None
+        time.sleep(0.5)
+
+
 def resolve(video_id):
     video_url = f"https://www.youtube.com/watch?v={video_id}"
     result = subprocess.run(
@@ -35,6 +51,7 @@ def resolve(video_id):
     url = data.get("url")
     if not isinstance(url, str) or not url.startswith("https://"):
         raise ValueError("Provider returned no playable URL")
+    wait_until_servable(url)
     expiry = re.search(r"[?&]expire=(\d+)", url)
     mime = {"m4a": "audio/mp4", "webm": "audio/webm", "mp3": "audio/mpeg"}.get(data.get("ext"), "application/octet-stream")
     return {"uri": url, "mimeType": mime, "expiresAt": int(expiry.group(1)) * 1000 if expiry else int(time.time() * 1000) + 300000, "seekable": True, "local": False, "videoId": video_id}

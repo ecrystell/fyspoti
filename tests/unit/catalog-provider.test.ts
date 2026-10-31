@@ -26,6 +26,13 @@ const fakeYtMusic = (overrides: Partial<YtMusicPort> = {}): YtMusicPort => ({
   searchArtists: vi.fn(async () => [artistRow]),
   album: vi.fn(async () => ({ ...albumRow, tracks: [song(), song({ videoId: 'vid-2', title: 'Quay Song', durationSeconds: 180 })] })),
   artist: vi.fn(async () => artistRow),
+  relatedArtists: vi.fn(async () => []),
+  radio: vi.fn(async () => []),
+  home: vi.fn(async () => []),
+  moods: vi.fn(async () => []),
+  moodPlaylists: vi.fn(async () => []),
+  playlist: vi.fn(async () => []),
+  suggestions: vi.fn(async () => []),
   ...overrides,
 });
 
@@ -170,10 +177,6 @@ describe('catalog provider contract', () => {
     expect(ytMusic.searchTracks).not.toHaveBeenCalled();
   });
 
-  it('says recommendations are missing rather than returning nothing', async () => {
-    const result = await createCatalog({ ytMusic: fakeYtMusic() }).getRecommendations({ surface: 'home', filterExplicit: false, excludedTrackIds: [], blockedArtistIds: [] }, null);
-    expect(result).toMatchObject({ ok: false, error: { code: 'UNAVAILABLE' } });
-  });
 });
 
 describe('moving through the catalog', () => {

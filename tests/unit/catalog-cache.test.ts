@@ -31,6 +31,13 @@ const fakeYtMusic = (overrides: Partial<YtMusicPort> = {}): YtMusicPort => ({
   searchArtists: vi.fn(async () => [artistRow]),
   album: vi.fn(async () => ({ ...albumRow, tracks: [song()] })),
   artist: vi.fn(async () => artistRow),
+  relatedArtists: vi.fn(async () => []),
+  radio: vi.fn(async () => []),
+  home: vi.fn(async () => []),
+  moods: vi.fn(async () => []),
+  moodPlaylists: vi.fn(async () => []),
+  playlist: vi.fn(async () => []),
+  suggestions: vi.fn(async () => []),
   ...overrides,
 });
 

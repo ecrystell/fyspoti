@@ -10,7 +10,7 @@ Owner: P4. Code is in [packages/catalog](../packages/catalog/src) and [services/
 | --- | --- |
 | `search`, `getTrack`, `getAlbum`, `getArtist` | Built. Tested with invented rows, and once against live YouTube Music. |
 | `findCandidates`, with evidence and corrections | Built. Measured below. |
-| `getRecommendations` | Not built (task 12). Returns an error so a surface cannot show "no music". |
+| Lyrics, recommendations, Home shelves, moods, related artists, suggestions | Built (tasks 10–12 and 14, in part). See [Discovery](#discovery). |
 | MusicBrainz identity, ISRC, credits, Cover Art Archive | Not built. Everything comes from YouTube Music so far. |
 | Discography | Not built. `Artist` has no field for it, so this needs a contract change. |
 | Connected to the app | **Not yet.** P1's renderer still reads the iTunes Search API. |
@@ -154,6 +154,40 @@ How to read this:
 - **Clean variants are barely tested.** The one label only checks that a clean request does not resolve to the explicit recording.
 - **A tribute act with a similar name is an open risk.** "Queen Machine" partly matches "Queen". A same-length official row by such an act could be accepted. No label covers it.
 
+## Discovery
+
+These are on `Catalog`, with types in [packages/contracts/src/discovery.ts](../packages/contracts/src/discovery.ts). `CatalogApi` and the existing contract types are unchanged. All were run once against the live providers on 2026-10-31.
+
+| Call | For | Live time | Notes |
+| --- | --- | --- | --- |
+| `getLyrics(trackId, { hint })` | Lyrics panel | 0.3–1.2 s | A null value means no lyrics, which is not an error |
+| `getRecommendations` with a seed | Radio, "because you played" | 0.8 s | Existing contract. Filters excluded tracks, blocked artists and explicit content |
+| `getRecommendations` with no seed | First-run Home | Under 1 s | Tracks from a popular playlist, labeled as popular and not personal |
+| `getHomeShelves(filter)` | Home screen | 0.7 s | Playlists, new-release albums and regional charts such as "Trending 20" |
+| `getMoods`, `getMoodPlaylists`, `getPlaylistTracks` | Browse | 0.1–0.4 s each | 32 moods and genres live. The refs are not IDs, so never save them |
+| `getRelatedArtists(artistId)` | Artist page | 0.4 s | Returned 10 live |
+| `getSuggestions(query)` | Search box | 0.2–1.1 s | Not cached, so debounce it |
+
+Limits:
+
+- **Filtering explicit content empties radio.** Radio rows have no explicit flag, and the filter fails closed, so only songs the catalog has already seen with a known status get through. In the live run that was 0 of 50. Playlists are not affected, because their rows have the flag.
+- **Home has no song shelves.** YouTube Music's Home song rows have no duration, which `Track` requires, so "Quick picks" and similar shelves are dropped. A shelf with nothing left is hidden.
+- **Home depends on region and is not personal.** It's what YouTube Music shows an anonymous visitor from this network.
+- **Recommendations are not personal yet.** They come from one seed track. Nothing reads listening history.
+- **Charts come from Home.** `get_charts` still crashes, so charts appear only when Home includes a chart playlist. ListenBrainz is not used, because its terms have not been read.
+- **Playlists can't be filtered as a whole.** They stay on shelves when the explicit filter is on, and their tracks are filtered on opening.
+
+Lyrics:
+
+- **LRCLIB is unreliable.** It returned `503` on 2 of 3 calls in one check, and worked in the next run. A failure is a retryable `UNAVAILABLE`. It must never interrupt playback.
+- **Timed lines need a confirmed length.** They appear only within 2 seconds of the track's length. For a live version or an import with no duration, only the plain words are returned, because wrong timing looks broken.
+- **Lyrics are held in memory for an hour and never saved.** LRCLIB publishes no data license, so `permissions` says no disk storage and no sharing. Offline lyrics stay blocked on that.
+- **`language` is always null,** because LRCLIB doesn't give it.
+
+P1 draws lyrics from P2's playback clock, as [doc 12](12-lyrics-and-visuals.md) says. The catalog has no timer.
+
+Not built: search filters and ranking (task 10), new-release feeds beyond Home, and share links (task 13).
+
 ## Failures
 
 | Situation | Result |
@@ -173,6 +207,7 @@ The worker reads metadata only, with no cookies or accounts. Failures with no sa
 - `AppId` is now a UUID. Fixture IDs changed to match.
 - `findCandidates` takes an optional `hint`, and there is a new `TrackHint`.
 - New evidence signal: `source-ref`.
+- New additive types in `packages/contracts/src/discovery.ts`, including `LyricsDocument`, `BrowseShelf` and `DiscoveryApi`.
 
 **P1:**
 

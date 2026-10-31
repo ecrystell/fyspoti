@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, shell, safeStorage } from 'electron';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { YoutubeSource } from '../p2/src/youtube-source.ts';
+import { installCatalog } from './catalog.ts';
 
 if (process.env.FYSPOTI_USER_DATA) app.setPath('userData', path.resolve(process.env.FYSPOTI_USER_DATA));
 let accounts: { service: unknown; close(): Promise<void> } | undefined;
@@ -35,6 +36,10 @@ app.whenReady().then(async () => {
   // P3's session service stays in the main process alongside P2's services.
   const accountModule = await import(pathToFileURL(path.join(appRoot, 'electron/accounts.mjs')).href);
   accounts = await accountModule.installAccounts({ app, ipcMain, safeStorage, window, appUrl });
+  try {
+    const catalog = installCatalog({ ipcMain, window, appUrl, python: env('FYSPOTI_CATALOG_PYTHON') || sourcePython, workerPath: path.join(appRoot, 'services', 'catalog-worker', 'worker.py') });
+    app.on('will-quit', () => catalog.close());
+  } catch (error) { console.error('P4 catalog failed to start', error); }
   const playbackModule = await import(pathToFileURL(path.join(appRoot, 'electron/playback.mjs')).href);
   const sourceScript = process.env.FYSPOTI_E2E === '1' && process.env.FYSPOTI_TEST_SOURCE_SCRIPT ? process.env.FYSPOTI_TEST_SOURCE_SCRIPT : path.join(appRoot, 'p2', 'worker', 'youtube_source.py');
   const source = new YoutubeSource(sourcePython, sourceScript);

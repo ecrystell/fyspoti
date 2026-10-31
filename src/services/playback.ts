@@ -7,6 +7,7 @@ import { Player } from '../../p2/src/player.ts';
 import { createRendererPlayer } from '../../p2/src/renderer-player.ts';
 import type { CatalogSourceAdapter } from '../../p2/src/source-resolver.ts';
 import { previewFor } from './catalog.ts';
+import { useAccountPlayback } from '../cloud/useAccountPlayback';
 
 export type { PlayerState, QueueItem };
 
@@ -42,10 +43,12 @@ async function createPlayback(): Promise<{ player: Player; dispose(): void }> {
 }
 
 export function usePlayback(enabled = true): { player: Player | null; state: PlayerState } {
+  const scopedBridge = enabled ? window.desktop?.playback : undefined;
+  const scoped = useAccountPlayback(scopedBridge, previewFor);
   const [player, setPlayer] = useState<Player | null>(null);
   const [state, setState] = useState<PlayerState>(idle);
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || scopedBridge) return;
     let disposed = false;
     let session: { player: Player; dispose(): void } | undefined;
     let unsubscribe = () => {};
@@ -58,8 +61,8 @@ export function usePlayback(enabled = true): { player: Player | null; state: Pla
     const save = () => session?.dispose();
     window.addEventListener('beforeunload', save);
     return () => { disposed = true; window.removeEventListener('beforeunload', save); unsubscribe(); session?.dispose(); };
-  }, [enabled]);
-  return { player, state };
+  }, [enabled, scopedBridge]);
+  return scopedBridge ? { player: scoped.player, state: scoped.state } : { player, state };
 }
 
 export function queueItem(trackId: string, title: string, artist: string, durationMs?: number): QueueItem {

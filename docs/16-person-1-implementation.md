@@ -83,3 +83,8 @@ Track menu now uses an **Add to playlist ▸** submenu (Find a playlist filter, 
 ## Error log
 
 Open and fixed integration errors: [24-person-1-error-log.md](24-person-1-error-log.md).
+
+
+## Synthwave theme
+
+Original synthwave visual style replacing the Spotify look, scoped so P3's CloudApp is unaffected: [25-person-1-synthwave-theme.md](25-person-1-synthwave-theme.md).

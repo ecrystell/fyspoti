@@ -12,7 +12,8 @@ def normalized(value):
 
 def choose_video(request, hits):
     title = normalized(request["title"])
-    artist = normalized(request["artist"].split(",")[0])
+    # iTunes joins credits as "A, B & C"; the primary artist is enough to match.
+    artist = normalized(re.split(r",|&", request["artist"])[0])
     duration = request["durationMs"] / 1000
     if not title or not artist or duration <= 0:
         raise ValueError("Track metadata is incomplete")
