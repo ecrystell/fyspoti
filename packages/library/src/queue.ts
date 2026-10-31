@@ -1,10 +1,7 @@
-import type { LibraryApi, Result } from '@fyspoti/contracts';
+import type { LibraryApi, Result, LibraryQueue, LibraryQueueItem } from '@fyspoti/contracts';
+export type { LibraryQueue, LibraryQueueItem } from '@fyspoti/contracts';
 
 /** Structurally matches P2 QueueItem, without pulling Electron into this package. */
-export interface LibraryQueueItem {
-  id: string; trackId: string; title: string; artist: string; durationMs: number;
-}
-export interface LibraryQueue { playlistId: string; revision: number; items: LibraryQueueItem[] }
 export interface QueueTarget { setQueue(items: LibraryQueueItem[], startId?: string): Promise<void> }
 
 export async function preparePlaylistQueue(api: LibraryApi, playlistId: string): Promise<Result<LibraryQueue>> {

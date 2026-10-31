@@ -1,8 +1,15 @@
 # Fyspoti
 
-Windows music application built by a four-person team. The Electron desktop shell now
-uses Person 2's player and download bridge. Person 3's cloud playlists and Person 4's
-catalog contracts remain separate integration work.
+Windows music application built by a four-person team. Implemented foundations include
+Person 3's secure cloud playlists, Person 2's playback/download module, and Person 4's
+provider spike and draft catalog contracts. Full application integration is in progress.
+
+The merged TypeScript Electron shell installs both P2's playback/download bridge
+and P3's account service. The default account UI uses previews and private cloud
+libraries. To build P1/P2's playback prototype, set
+`VITE_FYSPOTI_DESKTOP_MODE=prototype` before `npm run desktop`; its local data stays
+separate. See [P1 integration](docs/22-person-1-integration.md),
+[catalog core](docs/22-catalog-core.md), and [P2 setup](p2/README.md) for that route.
 
 - [Plans and architecture](docs/README.md)
 - [Provider spike](docs/16-provider-spike.md) and [capability matrix](docs/17-provider-capability-matrix.md)
@@ -11,18 +18,18 @@ catalog contracts remain separate integration work.
 
 ## Desktop frontend
 
-Person 1's React/Electron UI is implemented. See [frontend features](docs/16-person-1-implementation.md) and [queue/Connect audit](docs/21-queue-connect-menu-audit.md). The desktop player is connected to Person 2's module.
+The Electron UI connects local email-code accounts to private cloud playlists, likes and display-name profiles. See [desktop accounts setup](docs/22-person-3-desktop-accounts.md), [frontend features](docs/16-person-1-implementation.md) and [queue/Connect audit](docs/21-queue-connect-menu-audit.md).
 
 After installing dependencies:
 
 ```powershell
 npm run setup:desktop
+npm run cloud:start
 npm run build
-./p2/setup.ps1
-npm run desktop
+npm run desktop:local
 ```
 
-Windows shortcut: run `.\launch.ps1`. It finds Node on PATH or the existing Codex runtime. Browser development: `npm run dev` keeps the preview player. The desktop uses P2 for full-track playback and downloads through the provisional YouTube route recorded in [the provider spike](docs/16-provider-spike.md). The Python setup is required for that route; local files work through the same player. Cloud synchronization is still separate work.
+Read local sign-in codes at `http://127.0.0.1:54324`. Browser development (`npm run dev`) keeps the separate localStorage prototype. Desktop cloud accounts start empty; prototype data is not imported. The UI uses online metadata/artwork and preview audio; full-track playback, downloads and offline synchronization remain separate work. Hosted email is deferred.
 
 ## Development
 
@@ -55,6 +62,7 @@ checks upgrading populated Part 1 data in a disposable local database.
 
 - `@fyspoti/contracts`: playlist types, catalog schemas, pagination and library/catalog interfaces.
 - `@fyspoti/library`: Supabase adapter and in-memory authentication helper.
+- `@fyspoti/accounts`: main-process email-code authentication, encrypted sessions and profile service.
 - `services/cloud`: Supabase configuration, migrations and fixture seed policy.
 
 `npm run build` builds both workspace packages and the desktop frontend. Use `npm run build:packages` or `npm run build:frontend` to build either independently. Run `npm run build:packages` before consuming workspace packages. Each package exports compiled

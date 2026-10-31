@@ -1,4 +1,4 @@
-import type { Cursor, Page, Result } from './common.ts';
+import type { AppError, Cursor, Page, Result } from './common.ts';
 import type { Track } from './catalog.ts';
 
 /** App-owned UUIDs; catalog providers and stream URLs never define track identity. */
@@ -84,6 +84,7 @@ export interface LibraryApi {
   getPlaylist(id: string): Promise<Result<Playlist>>;
   listPlaylistItems(playlistId: string, cursor?: Cursor): Promise<Result<Page<PlaylistItem>>>;
   setTrackLiked(track: Track, liked: boolean, mutationId: string): Promise<Result<TrackLike>>;
+  setTrackLikeFromSnapshot(trackId: string, metadataSnapshot: TrackMetadataSnapshot, liked: boolean, mutationId: string): Promise<Result<TrackLike>>;
   getTrackLike(trackId: string): Promise<Result<TrackLike>>;
   listLikedTracks(cursor?: Cursor): Promise<Result<Page<TrackLike>>>;
   appendTrack(playlistId: string, track: Track, context: MutationContext): Promise<Result<ItemMutation>>;
@@ -92,3 +93,28 @@ export interface LibraryApi {
   reorderPlaylistItems(playlistId: string, itemIds: string[], context: MutationContext): Promise<Result<Playlist>>;
   deletePlaylist(playlistId: string, context: MutationContext): Promise<Result<{ id: string; revision: number }>>;
 }
+
+export type LibraryAction =
+  | { type: 'create'; title: string }
+  | { type: 'like'; track: Track; liked: boolean }
+  | { type: 'likeSnapshot'; trackId: string; metadataSnapshot: TrackMetadataSnapshot; liked: boolean }
+  | { type: 'append'; playlistId: string; track: Track }
+  | { type: 'rename'; playlistId: string; title: string }
+  | { type: 'remove'; playlistId: string; itemId: string }
+  | { type: 'reorder'; playlistId: string; itemIds: string[] }
+  | { type: 'delete'; playlistId: string };
+
+export interface LibraryViewState {
+  accountId: string | null;
+  phase: 'ready' | 'loading' | 'mutation-pending' | 'conflict' | 'error';
+  playlists: Playlist[];
+  likedTracks: TrackLike[];
+  playlist: Playlist | null;
+  items: PlaylistItem[];
+  cursors: { playlists: string | null; likes: string | null; items: string | null };
+  error: AppError | null;
+  failedAction: LibraryAction | null;
+  failedContext: MutationContext | null;
+}
+export interface LibraryQueueItem { id: string; trackId: string; title: string; artist: string; durationMs: number }
+export interface LibraryQueue { playlistId: string; revision: number; items: LibraryQueueItem[] }

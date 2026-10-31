@@ -33,6 +33,8 @@ Person 3's next connected slice is documented in
 
 ## M0 results
 
+- [Desktop accounts and cloud library](22-person-3-desktop-accounts.md): Part 2B local email sign-in, encrypted sessions, profiles and the account-backed Electron UI; hosted email is deferred.
+
 - [Provider spike](16-provider-spike.md): selected sources, measurements and the YouTube exception that needs team confirmation.
 - [Provider capability matrix](17-provider-capability-matrix.md): what each source can do, and the permitted-content fallback.
 - [Draft shared contracts](../packages/contracts/README.md): proposed catalog schemas, pending P1, P2 and P3 review.

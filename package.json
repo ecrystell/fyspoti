@@ -30,20 +30,23 @@
     "cloud:advisors": "supabase db advisors --local --workdir services/cloud",
     "dev": "vite --host 127.0.0.1",
     "desktop": "npm run build && electron .",
+    "desktop:local": "node scripts/run-local-desktop.mjs",
+    "test:electron": "npm run build && node scripts/run-local-electron-tests.mjs",
     "setup:desktop": "node node_modules/electron/install.js",
     "build:packages": "tsc -b",
     "build:frontend": "tsc -p tsconfig.frontend.json && vite build",
     "build:desktop": "vite build -c vite.electron.config.ts --mode main && vite build -c vite.electron.config.ts --mode preload"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.1",
     "@types/node": "24.19.2",
-    "typescript": "7.0.2",
-    "vitest": "5.0.5",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "electron": "45.2.1",
     "esbuild": "0.25.12",
-    "vite": "6.4.5"
+    "typescript": "7.0.2",
+    "vite": "6.4.5",
+    "vitest": "5.0.5"
   },
   "dependencies": {
     "lucide-react": "0.468.0",

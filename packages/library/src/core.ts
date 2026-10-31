@@ -34,7 +34,7 @@ export function checkTrackId(value: string): void {
       || /^(https?:|file:|local:|p2-media:|spotify:|[a-z]:)/i.test(value)) invalid('Expected a canonical catalog track ID.');
 }
 
-function checkItem(item: AddPlaylistItemInput): void {
+export function checkItem(item: AddPlaylistItemInput): void {
   checkTrackId(item.trackId);
   if (!Number.isInteger(item.orderingKey) || item.orderingKey < 0 || item.orderingKey > MAX_ORDER) {
     invalid('orderingKey must be a nonnegative 32-bit integer.');

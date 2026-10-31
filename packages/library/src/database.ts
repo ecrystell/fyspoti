@@ -29,6 +29,12 @@ export type Json = null | boolean | number | string | Json[] | { [key: string]: 
 export interface Database {
   public: {
     Tables: {
+      profiles: {
+        Row: { id: string; display_name: string; revision: number };
+        Insert: { id: string; display_name?: string; revision?: number };
+        Update: { display_name?: string; revision?: number };
+        Relationships: [];
+      };
       track_likes: {
         Row: LikeRow;
         Insert: Omit<LikeRow, 'id'> & { id?: string };
@@ -56,6 +62,10 @@ export interface Database {
     };
     Views: { [_ in never]: never };
     Functions: {
+      profile_mutate: {
+        Args: { mutation_id: string; expected_account: string; expected_revision: number; display_name: string };
+        Returns: Json;
+      };
       library_mutate: {
         Args: { operation: string; mutation_id: string; payload: Json };
         Returns: Json;

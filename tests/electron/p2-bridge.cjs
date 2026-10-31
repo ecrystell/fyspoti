@@ -13,7 +13,7 @@ app.whenReady().then(async () => {
   const window = new BrowserWindow({
     show: false,
     webPreferences: {
-      preload: path.join(projectRoot, 'electron', 'preload.cjs'),
+      preload: path.join(projectRoot, 'dist-electron', 'preload.cjs'),
       contextIsolation: true, nodeIntegration: false, sandbox: true,
     },
   });
@@ -30,7 +30,10 @@ app.whenReady().then(async () => {
   const audioFile = path.join(temp, 'fixture.wav');
   fs.writeFileSync(audioFile, wav);
   const item = await p2.localFiles.add(audioFile);
-  await window.loadFile(path.join(projectRoot, 'dist', 'index.html'));
+  // Exercise the bridge independently of account UI and live catalog requests.
+  const fixturePage = path.join(temp, 'index.html');
+  fs.writeFileSync(fixturePage, '<!doctype html><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; connect-src p2-media:"><title>P2 bridge fixture</title>');
+  await window.loadFile(fixturePage);
   const result = await window.webContents.executeJavaScript(`(async () => ({
     p2: typeof window.p2,
     jobs: Array.isArray(await window.p2.jobs()),

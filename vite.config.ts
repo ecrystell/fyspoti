@@ -7,7 +7,7 @@ function contentSecurityPolicy(cloudUrl: string | undefined): Plugin {
   const policy = [
     "default-src 'self'", "script-src 'self'", "style-src 'self' 'unsafe-inline'",
     "img-src 'self' https: data: blob:", "media-src 'self' https: p2-media:", "font-src 'self' data:",
-    `connect-src 'self' https://itunes.apple.com${cloudUrl ? ' ' + new URL(cloudUrl).origin : ''}`,
+    `connect-src 'self' p2-media: https://itunes.apple.com${cloudUrl ? ' ' + new URL(cloudUrl).origin : ''}`,
     "object-src 'none'", "base-uri 'none'", "frame-src 'none'", "form-action 'none'",
   ].join('; ');
   return {

@@ -1,7 +1,7 @@
 import { LibraryError, Track, type LibraryApi, type MutationContext, type Result, type TrackLike, type TrackMetadataSnapshot } from '@fyspoti/contracts';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, ItemRow, Json, LikeRow, PlaylistRow } from './database.js';
-import { checkId, checkText, checkTrackId, createLibrary, decodeCursor, encodeCursor, executeMutation, invalid, playlist, playlistItem, requireOwner, translateError } from './core.js';
+import { checkId, checkItem, checkText, checkTrackId, createLibrary, decodeCursor, encodeCursor, executeMutation, invalid, playlist, playlistItem, requireOwner, translateError } from './core.js';
 
 export function like(row: LikeRow): TrackLike {
   return { id: row.id, trackId: row.track_id, liked: row.liked, revision: row.revision,
@@ -60,6 +60,11 @@ export function createLibraryApi(client: SupabaseClient<Database>, options: { pa
       if (typeof liked !== 'boolean') invalid('Expected an explicit like state.');
       const value = snapshot(track);
       return like(await mutate<LikeRow>(owner, 'like', mutationId, { trackId: value.trackId, metadataSnapshot: { ...value.metadataSnapshot }, liked }));
+    }),
+    setTrackLikeFromSnapshot: (trackId, metadataSnapshot, liked, mutationId) => result(async owner => {
+      checkItem({ trackId, metadataSnapshot, orderingKey: 0 });
+      if (typeof liked !== 'boolean') invalid('Expected an explicit like state.');
+      return like(await mutate<LikeRow>(owner, 'like', mutationId, { trackId, metadataSnapshot: { ...metadataSnapshot }, liked }));
     }),
     getTrackLike: trackId => result(async owner => {
       checkTrackId(trackId);
