@@ -33,4 +33,6 @@ import { CatalogFixtures, createMockCatalog } from '@fyspoti/contracts/testing';
 | `findCandidates` returns `no-match` as data | `NO_MATCH` stays for callers that needed a candidate | P2 |
 | `getRecommendations` takes a cursor | All list APIs use cursors | P1 |
 
+`p2/src/contracts.ts` has P2's own types. The gaps between the two are listed in [docs/16](../../docs/16-provider-spike.md#integration-with-p2s-module).
+
 Fixtures in `tests/fixtures/catalog` are invented. Keep them that way: see the public repository rules in [docs/16](../../docs/16-provider-spike.md).

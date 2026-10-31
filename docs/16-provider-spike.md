@@ -67,7 +67,7 @@ Other checks:
 | Source | Why not |
 | --- | --- |
 | Spotify Web API | The [Developer Policy](https://developer.spotify.com/policy) bans integrating with another service's streams (III.5) and replacing Spotify's core experience (III.11). [Development Mode](https://developer.spotify.com/blog/2026-02-06-update-on-developer-access-and-platform-security) allows five users, and [extended quota](https://developer.spotify.com/documentation/web-api/concepts/quota-modes) needs a registered organization and 250k monthly users. |
-| spotDL | Its `Spotdl` entry point needs Spotify credentials, which runs into the policy above, and it ships a default Spotify client ID. [Doc 10](10-accounts-and-cloud.md) already rules out embedding secrets like that in distributed code. ytmusicapi and yt-dlp give us the same audio route directly. **The final call is P2's.** |
+| spotDL | Its `Spotdl` entry point needs Spotify credentials, which runs into the policy above, and version 4.6.0 ships a default Spotify client ID. [Doc 10](10-accounts-and-cloud.md) already rules out embedding secrets like that in distributed code. ytmusicapi and yt-dlp give us the same audio route directly. P2's module currently pins spotDL 4.6.0, so **the final call is P2's** (see below). |
 | Deezer | Best results in this test, but its [terms](https://developers.deezer.com/termsofuse) limit use to private, non-commercial use, and developers report that new app registration is closed. That does not fit code anyone may reuse. Not adopted. |
 | SoundCloud | Its [API terms](https://developers.soundcloud.com/docs/api/terms-of-use) ban aggregated on-demand services, mixing with other sources and offline access. |
 | Jamendo | Needs a client ID (untested). Non-commercial only, and its [terms](https://devportal.jamendo.com/api_terms_of_use) bar apps built to cache content for offline access. Possible later for streaming only. |
@@ -96,11 +96,26 @@ The code is public under the MIT license. That license covers only what we wrote
 - **Load:** nothing was tested at sustained volume, from a second network or in another country. YouTube Music's real limits are unknown.
 - **Sample size:** 20 recordings is a spike, not a quality measure. The labels are ours, and two durations were corrected against MusicBrainz and Deezer after a first run. The acceptance check is deliberately simple. Task 7 replaces it.
 
-## Work this creates for P2
+## Integration with P2's module
+
+P2 pushed `p2/` while this spike was running (commit 42be389). The two sets of work merge cleanly as files, but these design gaps need agreement between P2 and P4. None of this has been changed in `p2/`.
+
+| Gap | Detail | Proposed fix |
+| --- | --- | --- |
+| **No stream resolver exists** | `p2/src/source-resolver.ts` expects a `CatalogSourceAdapter.resolveStream()` that returns a `PlayableSource`. Docs 01 and 13 make that P2's job, while P4 only returns candidates. The P2 worker handles downloads, not streams. | P2 owns a resolver that calls `findCandidates`, then yt-dlp. **This blocks the M1 search-to-play check.** |
+| **spotDL path needs a Spotify URL** | `p2/worker/worker.py` rejects a download unless `url` starts with `https://open.spotify.com/track/`. Our catalog holds no Spotify URLs. | Add a `yt-dlp` value for `sourceKind`, using the candidate's `sourceId`. |
+| Candidates carry no URL | `DownloadRequest` needs `url` and `matchedAudioUrl`. `SourceCandidate` has `provider` and `sourceId` by design. | P2's adapter builds the URL from those two fields. |
+| Artist shape | `QueueItem.artist` is a string. `Track.artists` is a list. | Join the names when building a queue item. |
+| Two contract files | `p2/src/contracts.ts` and `packages/contracts` are separate. `QueueItem.candidateId` already lines up with `SourceCandidate.id`. | Move shared types into `packages/contracts` once reviewed. |
+| Different tooling | `p2/` uses pnpm, TypeScript 5.9 and `@types/node` 22. `packages/contracts` uses npm, TypeScript 7.0.2 and `@types/node` 24. The `p2/` folder also differs from the `packages/player` path in doc 01. | Agree one setup at the same time as the stack approval. |
+
+The Internet Archive fallback should fit P2's existing `sourceKind: 'direct'` path, but that has not been tested.
+
+Packaging work for P2 if yt-dlp is adopted:
 
 - yt-dlp needs a JavaScript runtime for YouTube. System Node worked here, but a packaged app has none, and using Electron's is untested.
 - yt-dlp needs frequent updates to keep working, which conflicts with doc 02's rule against silently installing floating runtimes. An explicit update path is required.
-- Stream URLs last about 6 hours, so `PlayableSource` expiry must be handled during long sessions.
+- Stream URLs last about 6 hours, so `PlayableSource.expiresAt` must be handled during long sessions.
 
 ## Versions used
 
