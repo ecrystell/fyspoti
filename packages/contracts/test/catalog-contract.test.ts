@@ -18,6 +18,19 @@ const raw = await readFile(new URL('../../../tests/fixtures/catalog/catalog.json
 const fixtures = CatalogFixtures.parse(JSON.parse(raw));
 const catalog: CatalogApi = createMockCatalog(fixtures);
 
+// Synthetic IDs from tests/fixtures/catalog/catalog.json.
+const ids = {
+  tinChoir: '00000000-0000-4000-8000-000000001003',
+  harborStudio: '00000000-0000-4000-8000-000000003001',
+  harborRemaster: '00000000-0000-4000-8000-000000003002',
+  harborLive: '00000000-0000-4000-8000-000000003003',
+  harborCover: '00000000-0000-4000-8000-000000003004',
+  staticExplicit: '00000000-0000-4000-8000-000000003005',
+  staticClean: '00000000-0000-4000-8000-000000003006',
+  unknownTrack: '00000000-0000-4000-8000-000000003999',
+  studioCandidate: '00000000-0000-4000-8000-000000004001',
+};
+
 const baseContext: RecommendationContext = { surface: 'home', filterExplicit: false, excludedTrackIds: [], blockedArtistIds: [] };
 
 const recommendedIds = async (context: RecommendationContext) => {
@@ -50,8 +63,8 @@ describe('catalog provider contract', () => {
   it('keeps each recording version as its own track', async () => {
     const result = await catalog.search('harbor lights', null);
     assert.ok(result.ok);
-    const studio = await catalog.getTrack('track-harbor-studio');
-    const cover = await catalog.getTrack('track-harbor-cover');
+    const studio = await catalog.getTrack(ids.harborStudio);
+    const cover = await catalog.getTrack(ids.harborCover);
     assert.ok(studio.ok && cover.ok);
     assert.equal(studio.value.title, cover.value.title);
     assert.notEqual(studio.value.id, cover.value.id);
@@ -75,7 +88,7 @@ describe('catalog provider contract', () => {
   });
 
   it('returns a typed error for unknown ids', async () => {
-    const result = await catalog.getTrack('track-does-not-exist');
+    const result = await catalog.getTrack(ids.unknownTrack);
     assert.ok(!result.ok);
     assert.equal(result.error.code, 'UNAVAILABLE');
     assert.equal(result.error.retryable, false);
@@ -83,7 +96,7 @@ describe('catalog provider contract', () => {
 
   it('returns each match outcome with evidence', async () => {
     const outcomes = await Promise.all(
-      ['track-harbor-studio', 'track-harbor-remaster', 'track-harbor-live', 'track-static-clean'].map(async (id) => {
+      [ids.harborStudio, ids.harborRemaster, ids.harborLive, ids.staticClean].map(async (id) => {
         const result = await catalog.findCandidates(id);
         assert.ok(result.ok);
         return MatchResult.parse(result.value).status;
@@ -93,18 +106,22 @@ describe('catalog provider contract', () => {
   });
 
   it('applies recommendation exclusions and blocked artists', async () => {
-    assert.deepEqual(await recommendedIds({ ...baseContext, excludedTrackIds: ['track-harbor-studio'] }), ['track-harbor-live', 'track-static-explicit', 'track-static-clean']);
-    assert.deepEqual(await recommendedIds({ ...baseContext, blockedArtistIds: ['artist-tin-choir'] }), ['track-harbor-studio', 'track-harbor-live']);
+    assert.deepEqual(await recommendedIds({ ...baseContext, excludedTrackIds: [ids.harborStudio] }), [ids.harborLive, ids.staticExplicit, ids.staticClean]);
+    assert.deepEqual(await recommendedIds({ ...baseContext, blockedArtistIds: [ids.tinChoir] }), [ids.harborStudio, ids.harborLive]);
   });
 
   it('fails closed when filtering explicit content', async () => {
-    assert.deepEqual(await recommendedIds({ ...baseContext, filterExplicit: true }), ['track-harbor-studio', 'track-static-clean']);
+    assert.deepEqual(await recommendedIds({ ...baseContext, filterExplicit: true }), [ids.harborStudio, ids.staticClean]);
   });
 });
 
 describe('schema guards', () => {
   const track = fixtures.tracks[0];
   const candidate = fixtures.matches.flatMap((match) => (match.status === 'matched' ? [match.accepted] : []))[0];
+
+  it('rejects an ID that is not a UUID, because P3 stores them in uuid columns', () => {
+    assert.equal(Track.safeParse({ ...track, id: 'track-harbor-studio' }).success, false);
+  });
 
   it('rejects a stream URL on Track and SourceCandidate', () => {
     assert.equal(Track.safeParse({ ...track, streamUrl: 'https://example.com/a.m4a' }).success, false);
@@ -118,7 +135,7 @@ describe('schema guards', () => {
 
   it('rejects an ambiguous result with a single candidate', () => {
     const reasons = [{ signal: 'duration-match', detail: 'Only one' }];
-    assert.equal(MatchResult.safeParse({ status: 'ambiguous', trackId: 't', candidates: [candidate], reasons }).success, false);
+    assert.equal(MatchResult.safeParse({ status: 'ambiguous', trackId: ids.harborStudio, candidates: [candidate], reasons }).success, false);
   });
 
   it('rejects a candidate with no evidence or an out-of-range confidence', () => {
@@ -144,18 +161,18 @@ describe('playback consumer of findCandidates', () => {
   };
 
   it('resolves only an accepted candidate', async () => {
-    assert.deepEqual(await chooseCandidate(catalog, 'track-harbor-studio'), { action: 'resolve', candidateId: 'candidate-studio-open' });
+    assert.deepEqual(await chooseCandidate(catalog, ids.harborStudio), { action: 'resolve', candidateId: ids.studioCandidate });
   });
 
   it('asks instead of guessing on an ambiguous match', async () => {
-    assert.deepEqual(await chooseCandidate(catalog, 'track-harbor-remaster'), { action: 'ask-user', options: 2 });
+    assert.deepEqual(await chooseCandidate(catalog, ids.harborRemaster), { action: 'ask-user', options: 2 });
   });
 
   it('explains a no-match instead of substituting another version', async () => {
-    assert.deepEqual(await chooseCandidate(catalog, 'track-harbor-live'), { action: 'show-unavailable', reasons: 1 });
+    assert.deepEqual(await chooseCandidate(catalog, ids.harborLive), { action: 'show-unavailable', reasons: 1 });
   });
 
   it('surfaces catalog failures', async () => {
-    assert.deepEqual(await chooseCandidate(catalog, 'track-does-not-exist'), { action: 'show-error', code: 'UNAVAILABLE' });
+    assert.deepEqual(await chooseCandidate(catalog, ids.unknownTrack), { action: 'show-error', code: 'UNAVAILABLE' });
   });
 });

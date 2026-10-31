@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { Artwork, ProviderRef } from './common.ts';
 
-export const AppId = z.string().min(1);
+// UUIDs because P3 stores track IDs in uuid columns. See docs/22-catalog-core.md.
+export const AppId = z.uuid();
 
 export const ArtistCredit = z.strictObject({
   id: AppId,
@@ -44,6 +45,16 @@ export const Track = z.strictObject({
   providerRefs: z.array(ProviderRef).min(1),
 });
 export type Track = z.infer<typeof Track>;
+
+// What a caller already knows about a track the catalog may not hold, such as a
+// synced or imported playlist item. Shaped so TrackMetadataSnapshot fits directly.
+export const TrackHint = z.strictObject({
+  title: z.string().min(1),
+  artistNames: z.array(z.string().min(1)).min(1),
+  durationMs: z.number().int().nonnegative(), // 0 means unknown, as in Spotify exports.
+  album: z.string().min(1).optional(),
+});
+export type TrackHint = z.infer<typeof TrackHint>;
 
 export const Album = z.strictObject({
   id: AppId,
