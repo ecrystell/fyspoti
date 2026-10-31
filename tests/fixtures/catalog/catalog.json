@@ -1,0 +1,167 @@
+{
+  "artists": [
+    { "id": "artist-paper-lanterns", "name": "The Paper Lanterns", "artwork": [], "providerRefs": [{ "provider": "fixture", "id": "a1" }] },
+    { "id": "artist-mira-vale", "name": "Mira Vale", "disambiguation": "fictional fixture singer", "artwork": [], "providerRefs": [{ "provider": "fixture", "id": "a2" }] },
+    { "id": "artist-tin-choir", "name": "Tin Choir", "artwork": [], "providerRefs": [{ "provider": "fixture", "id": "a3" }] }
+  ],
+  "albums": [
+    {
+      "id": "album-harbor-lights",
+      "title": "Harbor Lights",
+      "artists": [{ "id": "artist-paper-lanterns", "name": "The Paper Lanterns" }],
+      "kind": "album",
+      "releaseDate": "1998-04",
+      "trackIds": ["track-harbor-studio", "track-harbor-remaster"],
+      "artwork": [{ "url": "https://example.com/fixtures/harbor-lights.jpg", "widthPx": 500, "heightPx": 500 }],
+      "providerRefs": [{ "provider": "fixture", "id": "r1" }]
+    }
+  ],
+  "tracks": [
+    {
+      "id": "track-harbor-studio",
+      "title": "Harbor Lights",
+      "artists": [{ "id": "artist-paper-lanterns", "name": "The Paper Lanterns" }],
+      "albumId": "album-harbor-lights",
+      "durationMs": 214000,
+      "explicit": "not-explicit",
+      "isrc": "ZZFIX9800001",
+      "versionFlags": [],
+      "artwork": [],
+      "providerRefs": [{ "provider": "fixture", "id": "t1" }]
+    },
+    {
+      "id": "track-harbor-remaster",
+      "title": "Harbor Lights (2018 Remaster)",
+      "artists": [{ "id": "artist-paper-lanterns", "name": "The Paper Lanterns" }],
+      "albumId": "album-harbor-lights",
+      "durationMs": 215000,
+      "explicit": "not-explicit",
+      "versionFlags": ["remaster"],
+      "artwork": [],
+      "providerRefs": [{ "provider": "fixture", "id": "t2" }]
+    },
+    {
+      "id": "track-harbor-live",
+      "title": "Harbor Lights (Live at the Quay)",
+      "artists": [{ "id": "artist-paper-lanterns", "name": "The Paper Lanterns" }],
+      "albumId": null,
+      "durationMs": 301000,
+      "explicit": "unknown",
+      "versionFlags": ["live"],
+      "artwork": [],
+      "providerRefs": [{ "provider": "fixture", "id": "t3" }]
+    },
+    {
+      "id": "track-harbor-cover",
+      "title": "Harbor Lights",
+      "artists": [{ "id": "artist-mira-vale", "name": "Mira Vale" }],
+      "albumId": null,
+      "durationMs": 214500,
+      "explicit": "not-explicit",
+      "versionFlags": ["cover"],
+      "artwork": [],
+      "providerRefs": [{ "provider": "fixture", "id": "t4" }]
+    },
+    {
+      "id": "track-static-explicit",
+      "title": "Static",
+      "artists": [{ "id": "artist-tin-choir", "name": "Tin Choir" }],
+      "albumId": null,
+      "durationMs": 180000,
+      "explicit": "explicit",
+      "versionFlags": [],
+      "artwork": [],
+      "providerRefs": [{ "provider": "fixture", "id": "t5" }]
+    },
+    {
+      "id": "track-static-clean",
+      "title": "Static (Clean)",
+      "artists": [{ "id": "artist-tin-choir", "name": "Tin Choir" }],
+      "albumId": null,
+      "durationMs": 180000,
+      "explicit": "not-explicit",
+      "versionFlags": ["clean-edit"],
+      "artwork": [],
+      "providerRefs": [{ "provider": "fixture", "id": "t6" }]
+    }
+  ],
+  "matches": [
+    {
+      "status": "matched",
+      "trackId": "track-harbor-studio",
+      "accepted": {
+        "id": "candidate-studio-open",
+        "trackId": "track-harbor-studio",
+        "provider": "fixture-open-audio",
+        "sourceId": "s1",
+        "durationMs": 214000,
+        "versionFlags": [],
+        "confidence": 0.97,
+        "evidence": [
+          { "signal": "isrc-match", "detail": "ISRC ZZFIX9800001 matches" },
+          { "signal": "artist-match", "detail": "Uploader is The Paper Lanterns" },
+          { "signal": "duration-match", "detail": "Difference 0 ms" }
+        ],
+        "accessBasis": "open-license",
+        "license": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "alternatives": []
+    },
+    {
+      "status": "ambiguous",
+      "trackId": "track-harbor-remaster",
+      "candidates": [
+        {
+          "id": "candidate-remaster-a",
+          "trackId": "track-harbor-remaster",
+          "provider": "fixture-open-audio",
+          "sourceId": "s2",
+          "durationMs": 215000,
+          "versionFlags": ["remaster"],
+          "confidence": 0.61,
+          "evidence": [{ "signal": "version-match", "detail": "Title says remaster" }],
+          "accessBasis": "open-license"
+        },
+        {
+          "id": "candidate-remaster-b",
+          "trackId": "track-harbor-remaster",
+          "provider": "fixture-open-audio",
+          "sourceId": "s3",
+          "durationMs": 214000,
+          "versionFlags": [],
+          "confidence": 0.58,
+          "evidence": [{ "signal": "duration-match", "detail": "Duration fits, but no remaster evidence" }],
+          "accessBasis": "open-license"
+        }
+      ],
+      "reasons": [{ "signal": "duration-match", "detail": "Two candidates fit and neither has an ISRC" }]
+    },
+    {
+      "status": "no-match",
+      "trackId": "track-harbor-live",
+      "rejected": [
+        {
+          "id": "candidate-live-trap",
+          "trackId": "track-harbor-live",
+          "provider": "fixture-open-audio",
+          "sourceId": "s4",
+          "durationMs": 214000,
+          "versionFlags": [],
+          "confidence": 0.12,
+          "evidence": [
+            { "signal": "title-match", "detail": "Same base title" },
+            { "signal": "version-mismatch", "detail": "Studio candidate for a live recording" }
+          ],
+          "accessBasis": "open-license"
+        }
+      ],
+      "reasons": [{ "signal": "version-mismatch", "detail": "Only studio recordings were found" }]
+    }
+  ],
+  "recommendations": [
+    { "trackId": "track-harbor-studio", "reason": "Fixture: because you saved this artist" },
+    { "trackId": "track-harbor-live", "reason": "Fixture: more from this artist" },
+    { "trackId": "track-static-explicit", "reason": "Fixture: popular this week" },
+    { "trackId": "track-static-clean", "reason": "Fixture: popular this week" }
+  ]
+}

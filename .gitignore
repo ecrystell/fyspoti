@@ -1,5 +1,13 @@
 node_modules/
 dist/
 *.log
-
 work/
+coverage/
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+services/cloud/supabase/.temp/
+services/cloud/supabase/.branches/
+__pycache__/
+.venv/

@@ -1,6 +1,8 @@
 # Windows music app: implementation plans
 
-Drafted 2026-10-31. These are plans, not implemented features.
+Drafted 2026-10-31. Documents 01–15 describe the project plans. Person 3's first
+implementation slice and its validation/review status are recorded in
+[Part 1 setup and handoff](16-person-3-foundation.md).
 
 ## Confirmed decisions
 
@@ -25,6 +27,14 @@ Drafted 2026-10-31. These are plans, not implemented features.
 | Person 2 | [Playback](04-person-2-playback.md) | [Player](08-player-and-devices.md), [downloads](09-downloads-and-offline.md) |
 | Person 3 | [Accounts and personal data](05-person-3-accounts-library.md) | [Accounts/cloud](10-accounts-and-cloud.md), [library/playlists](11-library-and-playlists.md) |
 | Person 4 | [Catalog, discovery, social](06-person-4-catalog-social.md) | [Catalog/recommendations](13-catalog-and-discovery.md), [social/statistics](14-social-and-statistics.md) |
+
+## M0 results
+
+- [Provider spike](16-provider-spike.md): selected sources, measurements and the YouTube exception that needs team confirmation.
+- [Provider capability matrix](17-provider-capability-matrix.md): what each source can do, and the permitted-content fallback.
+- [Draft shared contracts](../packages/contracts/README.md): proposed catalog schemas, pending P1, P2 and P3 review.
+
+The repository is licensed under [MIT](../LICENSE). Public repository rules are in the spike report.
 
 ## Scope and sequencing
 

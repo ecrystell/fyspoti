@@ -1,0 +1,733 @@
+{
+  "ranAt": "2026-10-31T04:13:06.610Z",
+  "summary": {
+    "musicbrainzFreeText": {
+      "total": 20,
+      "foundInTop25": 6,
+      "top1": 2,
+      "top5": 3,
+      "withIsrc": 4,
+      "medianMs": 410,
+      "maxMs": 4963,
+      "errors": 0
+    },
+    "musicbrainzStructured": {
+      "total": 20,
+      "foundInTop25": 17,
+      "top1": 6,
+      "top5": 12,
+      "withIsrc": 10,
+      "medianMs": 701,
+      "maxMs": 5120,
+      "errors": 0
+    },
+    "deezer": {
+      "total": 20,
+      "foundInTop25": 20,
+      "top1": 20,
+      "top5": 20,
+      "withIsrc": 20,
+      "medianMs": 268,
+      "maxMs": 551,
+      "errors": 0
+    },
+    "lyrics": {
+      "total": 20,
+      "synced": 18,
+      "plainOnly": 1,
+      "missing": 1,
+      "serverErrors": 1
+    }
+  },
+  "musicbrainzDetails": {
+    "isrcLookup": {
+      "status": 200,
+      "ms": 2656,
+      "recordingId": "b1a9c0e9-d987-4042-ae91-78d6a3267d69",
+      "lengthMs": 355106
+    },
+    "pagination": {
+      "status": [
+        200,
+        200
+      ],
+      "total": 229,
+      "overlap": 0,
+      "pageSizes": [
+        25,
+        25
+      ]
+    },
+    "discography": {
+      "status": 200,
+      "total": 267
+    },
+    "coverArt": [
+      {
+        "status": 200,
+        "ms": 2523,
+        "type": "image/jpeg"
+      },
+      {
+        "status": 200,
+        "ms": 1720,
+        "type": "image/jpeg"
+      },
+      {
+        "status": 200,
+        "ms": 1756,
+        "type": "image/jpeg"
+      }
+    ]
+  },
+  "audius": {
+    "search": {
+      "status": 200,
+      "ms": 1538,
+      "returned": 25,
+      "streamable": 25,
+      "verifiedUploader": 13,
+      "downloadable": 4,
+      "withIsrc": 2
+    },
+    "stream": {
+      "status": 206,
+      "type": "audio/mpeg",
+      "contentRange": "bytes 65536-66559/15794069"
+    },
+    "mainstreamHazard": {
+      "returned": 7,
+      "verifiedUploader": 0,
+      "withinTwoSecondsOfStudio": 5,
+      "withIsrc": 0
+    }
+  },
+  "internetArchive": {
+    "search": {
+      "status": 200,
+      "ms": 1255,
+      "numFound": 61255,
+      "sampled": 500,
+      "reuseFriendlyInSample": 44
+    },
+    "item": {
+      "identifier": "exalot-cosmic-voyager",
+      "licenseurl": "http://creativecommons.org/licenses/by-sa/3.0/"
+    },
+    "stream": {
+      "status": 206,
+      "type": "audio/mpeg",
+      "contentRange": "bytes 65536-66559/19331299"
+    }
+  },
+  "browse": {
+    "deezerCharts": {
+      "status": 200,
+      "ms": 291,
+      "items": 10
+    },
+    "deezerNewReleases": {
+      "status": 200,
+      "ms": 246,
+      "items": 0
+    },
+    "deezerGenres": {
+      "status": 200,
+      "ms": 241,
+      "items": 22
+    },
+    "deezerRelatedArtists": {
+      "status": 200,
+      "ms": 335,
+      "items": 10
+    },
+    "deezerArtistRadio": {
+      "status": 200,
+      "ms": 247,
+      "items": 10
+    },
+    "listenBrainzTopRecordings": {
+      "status": 200,
+      "ms": 1436,
+      "items": 2193
+    },
+    "listenBrainzFreshReleases": {
+      "status": 200,
+      "ms": 1476,
+      "items": 1693
+    },
+    "listenBrainzSitewideArtists": {
+      "status": 200,
+      "ms": 305,
+      "items": 10
+    }
+  },
+  "musicbrainzFreeText": [
+    {
+      "id": "queen-bohemian",
+      "status": 200,
+      "ms": 1967,
+      "rank": null,
+      "hasIsrc": null
+    },
+    {
+      "id": "queen-bohemian-liveaid",
+      "status": 200,
+      "ms": 411,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "nirvana-teen-spirit",
+      "status": 200,
+      "ms": 221,
+      "rank": null,
+      "hasIsrc": null
+    },
+    {
+      "id": "mj-billie-jean",
+      "status": 200,
+      "ms": 558,
+      "rank": null,
+      "hasIsrc": null
+    },
+    {
+      "id": "adele-rolling",
+      "status": 200,
+      "ms": 222,
+      "rank": null,
+      "hasIsrc": null
+    },
+    {
+      "id": "kendrick-humble",
+      "status": 200,
+      "ms": 407,
+      "rank": null,
+      "hasIsrc": null
+    },
+    {
+      "id": "swift-shake-it-off",
+      "status": 200,
+      "ms": 204,
+      "rank": null,
+      "hasIsrc": null
+    },
+    {
+      "id": "eilish-bad-guy",
+      "status": 200,
+      "ms": 210,
+      "rank": null,
+      "hasIsrc": null
+    },
+    {
+      "id": "radiohead-creep",
+      "status": 200,
+      "ms": 207,
+      "rank": null,
+      "hasIsrc": null
+    },
+    {
+      "id": "fleetwood-dreams",
+      "status": 200,
+      "ms": 211,
+      "rank": null,
+      "hasIsrc": null
+    },
+    {
+      "id": "eminem-lose-yourself",
+      "status": 200,
+      "ms": 4723,
+      "rank": null,
+      "hasIsrc": null
+    },
+    {
+      "id": "daft-punk-get-lucky-edit",
+      "status": 200,
+      "ms": 209,
+      "rank": 21,
+      "hasIsrc": false
+    },
+    {
+      "id": "cash-hurt",
+      "status": 200,
+      "ms": 4963,
+      "rank": null,
+      "hasIsrc": null
+    },
+    {
+      "id": "beatles-let-it-be-remaster",
+      "status": 200,
+      "ms": 784,
+      "rank": 1,
+      "hasIsrc": false
+    },
+    {
+      "id": "bts-dynamite",
+      "status": 200,
+      "ms": 730,
+      "rank": null,
+      "hasIsrc": null
+    },
+    {
+      "id": "badbunny-titi",
+      "status": 200,
+      "ms": 4853,
+      "rank": 8,
+      "hasIsrc": true
+    },
+    {
+      "id": "stromae-alors-on-danse",
+      "status": 200,
+      "ms": 239,
+      "rank": 21,
+      "hasIsrc": true
+    },
+    {
+      "id": "utada-first-love",
+      "status": 200,
+      "ms": 213,
+      "rank": null,
+      "hasIsrc": null
+    },
+    {
+      "id": "frahm-says",
+      "status": 200,
+      "ms": 410,
+      "rank": null,
+      "hasIsrc": null
+    },
+    {
+      "id": "khruangbin-time",
+      "status": 200,
+      "ms": 502,
+      "rank": 3,
+      "hasIsrc": true
+    }
+  ],
+  "musicbrainz": [
+    {
+      "id": "queen-bohemian",
+      "status": 200,
+      "ms": 481,
+      "rank": 22,
+      "hasIsrc": true
+    },
+    {
+      "id": "queen-bohemian-liveaid",
+      "status": 200,
+      "ms": 5046,
+      "rank": null,
+      "hasIsrc": null
+    },
+    {
+      "id": "nirvana-teen-spirit",
+      "status": 200,
+      "ms": 266,
+      "rank": null,
+      "hasIsrc": null
+    },
+    {
+      "id": "mj-billie-jean",
+      "status": 200,
+      "ms": 1051,
+      "rank": 1,
+      "hasIsrc": false
+    },
+    {
+      "id": "adele-rolling",
+      "status": 200,
+      "ms": 533,
+      "rank": 14,
+      "hasIsrc": true
+    },
+    {
+      "id": "kendrick-humble",
+      "status": 200,
+      "ms": 549,
+      "rank": 2,
+      "hasIsrc": false
+    },
+    {
+      "id": "swift-shake-it-off",
+      "status": 200,
+      "ms": 772,
+      "rank": 3,
+      "hasIsrc": false
+    },
+    {
+      "id": "eilish-bad-guy",
+      "status": 200,
+      "ms": 801,
+      "rank": 3,
+      "hasIsrc": true
+    },
+    {
+      "id": "radiohead-creep",
+      "status": 200,
+      "ms": 326,
+      "rank": 15,
+      "hasIsrc": false
+    },
+    {
+      "id": "fleetwood-dreams",
+      "status": 200,
+      "ms": 692,
+      "rank": 1,
+      "hasIsrc": false
+    },
+    {
+      "id": "eminem-lose-yourself",
+      "status": 200,
+      "ms": 487,
+      "rank": 2,
+      "hasIsrc": false
+    },
+    {
+      "id": "daft-punk-get-lucky-edit",
+      "status": 200,
+      "ms": 5120,
+      "rank": 23,
+      "hasIsrc": true
+    },
+    {
+      "id": "cash-hurt",
+      "status": 200,
+      "ms": 1118,
+      "rank": 2,
+      "hasIsrc": false
+    },
+    {
+      "id": "beatles-let-it-be-remaster",
+      "status": 200,
+      "ms": 697,
+      "rank": null,
+      "hasIsrc": null
+    },
+    {
+      "id": "bts-dynamite",
+      "status": 200,
+      "ms": 863,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "badbunny-titi",
+      "status": 200,
+      "ms": 701,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "stromae-alors-on-danse",
+      "status": 200,
+      "ms": 1039,
+      "rank": 6,
+      "hasIsrc": true
+    },
+    {
+      "id": "utada-first-love",
+      "status": 200,
+      "ms": 1338,
+      "rank": 2,
+      "hasIsrc": true
+    },
+    {
+      "id": "frahm-says",
+      "status": 200,
+      "ms": 321,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "khruangbin-time",
+      "status": 200,
+      "ms": 243,
+      "rank": 1,
+      "hasIsrc": true
+    }
+  ],
+  "deezer": [
+    {
+      "id": "queen-bohemian",
+      "status": 200,
+      "ms": 551,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "queen-bohemian-liveaid",
+      "status": 200,
+      "ms": 213,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "nirvana-teen-spirit",
+      "status": 200,
+      "ms": 291,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "mj-billie-jean",
+      "status": 200,
+      "ms": 292,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "adele-rolling",
+      "status": 200,
+      "ms": 258,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "kendrick-humble",
+      "status": 200,
+      "ms": 253,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "swift-shake-it-off",
+      "status": 200,
+      "ms": 282,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "eilish-bad-guy",
+      "status": 200,
+      "ms": 268,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "radiohead-creep",
+      "status": 200,
+      "ms": 260,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "fleetwood-dreams",
+      "status": 200,
+      "ms": 272,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "eminem-lose-yourself",
+      "status": 200,
+      "ms": 285,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "daft-punk-get-lucky-edit",
+      "status": 200,
+      "ms": 215,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "cash-hurt",
+      "status": 200,
+      "ms": 293,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "beatles-let-it-be-remaster",
+      "status": 200,
+      "ms": 287,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "bts-dynamite",
+      "status": 200,
+      "ms": 280,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "badbunny-titi",
+      "status": 200,
+      "ms": 228,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "stromae-alors-on-danse",
+      "status": 200,
+      "ms": 264,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "utada-first-love",
+      "status": 200,
+      "ms": 229,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "frahm-says",
+      "status": 200,
+      "ms": 248,
+      "rank": 1,
+      "hasIsrc": true
+    },
+    {
+      "id": "khruangbin-time",
+      "status": 200,
+      "ms": 222,
+      "rank": 1,
+      "hasIsrc": true
+    }
+  ],
+  "lyrics": [
+    {
+      "id": "queen-bohemian",
+      "status": 200,
+      "ms": 377,
+      "synced": true,
+      "plain": true
+    },
+    {
+      "id": "queen-bohemian-liveaid",
+      "status": 200,
+      "ms": 278,
+      "synced": true,
+      "plain": true
+    },
+    {
+      "id": "nirvana-teen-spirit",
+      "status": 200,
+      "ms": 281,
+      "synced": true,
+      "plain": true
+    },
+    {
+      "id": "mj-billie-jean",
+      "status": 200,
+      "ms": 297,
+      "synced": true,
+      "plain": true
+    },
+    {
+      "id": "adele-rolling",
+      "status": 200,
+      "ms": 358,
+      "synced": true,
+      "plain": true
+    },
+    {
+      "id": "kendrick-humble",
+      "status": 200,
+      "ms": 322,
+      "synced": true,
+      "plain": true
+    },
+    {
+      "id": "swift-shake-it-off",
+      "status": 200,
+      "ms": 276,
+      "synced": true,
+      "plain": true
+    },
+    {
+      "id": "eilish-bad-guy",
+      "status": 200,
+      "ms": 275,
+      "synced": true,
+      "plain": true
+    },
+    {
+      "id": "radiohead-creep",
+      "status": 200,
+      "ms": 287,
+      "synced": true,
+      "plain": true
+    },
+    {
+      "id": "fleetwood-dreams",
+      "status": 200,
+      "ms": 340,
+      "synced": true,
+      "plain": true
+    },
+    {
+      "id": "eminem-lose-yourself",
+      "status": 200,
+      "ms": 275,
+      "synced": true,
+      "plain": true
+    },
+    {
+      "id": "daft-punk-get-lucky-edit",
+      "status": 200,
+      "ms": 279,
+      "synced": true,
+      "plain": true
+    },
+    {
+      "id": "cash-hurt",
+      "status": 200,
+      "ms": 276,
+      "synced": true,
+      "plain": true
+    },
+    {
+      "id": "beatles-let-it-be-remaster",
+      "status": 200,
+      "ms": 278,
+      "synced": true,
+      "plain": true
+    },
+    {
+      "id": "bts-dynamite",
+      "status": 200,
+      "ms": 279,
+      "synced": true,
+      "plain": true
+    },
+    {
+      "id": "badbunny-titi",
+      "status": 200,
+      "ms": 308,
+      "synced": true,
+      "plain": true
+    },
+    {
+      "id": "stromae-alors-on-danse",
+      "status": 200,
+      "ms": 281,
+      "synced": false,
+      "plain": true
+    },
+    {
+      "id": "utada-first-love",
+      "status": 200,
+      "ms": 287,
+      "synced": true,
+      "plain": true
+    },
+    {
+      "id": "frahm-says",
+      "status": 503,
+      "ms": 800,
+      "synced": false,
+      "plain": false
+    },
+    {
+      "id": "khruangbin-time",
+      "status": 200,
+      "ms": 1077,
+      "synced": true,
+      "plain": true
+    }
+  ]
+}

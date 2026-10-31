@@ -1,0 +1,21 @@
+{
+  "name": "@fyspoti/contracts",
+  "version": "0.1.0-draft.0",
+  "description": "Shared playlist contracts and draft catalog schemas pending affected-owner review.",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./testing": { "types": "./dist/testing/mock-catalog.d.ts", "import": "./dist/testing/mock-catalog.js" }
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "node --test test/*.test.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.tests.json",
+    "check": "npm run typecheck && npm test"
+  },
+  "engines": { "node": ">=24" },
+  "dependencies": { "zod": "4.6.7" },
+  "devDependencies": { "@types/node": "24.19.2", "typescript": "7.0.2" }
+}
