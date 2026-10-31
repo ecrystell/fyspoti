@@ -4,7 +4,10 @@
   "private": true,
   "license": "MIT",
   "type": "module",
-  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./youtube-worker": { "types": "./dist/youtube/worker-client.d.ts", "import": "./dist/youtube/worker-client.js" }
+  },
   "dependencies": {
     "@fyspoti/contracts": "0.1.0-draft.0",
     "fflate": "0.8.3",

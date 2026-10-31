@@ -1,27 +1,27 @@
 {
   "artists": [
-    { "id": "artist-paper-lanterns", "name": "The Paper Lanterns", "artwork": [], "providerRefs": [{ "provider": "fixture", "id": "a1" }] },
-    { "id": "artist-mira-vale", "name": "Mira Vale", "disambiguation": "fictional fixture singer", "artwork": [], "providerRefs": [{ "provider": "fixture", "id": "a2" }] },
-    { "id": "artist-tin-choir", "name": "Tin Choir", "artwork": [], "providerRefs": [{ "provider": "fixture", "id": "a3" }] }
+    { "id": "00000000-0000-4000-8000-000000001001", "name": "The Paper Lanterns", "artwork": [], "providerRefs": [{ "provider": "fixture", "id": "a1" }] },
+    { "id": "00000000-0000-4000-8000-000000001002", "name": "Mira Vale", "disambiguation": "fictional fixture singer", "artwork": [], "providerRefs": [{ "provider": "fixture", "id": "a2" }] },
+    { "id": "00000000-0000-4000-8000-000000001003", "name": "Tin Choir", "artwork": [], "providerRefs": [{ "provider": "fixture", "id": "a3" }] }
   ],
   "albums": [
     {
-      "id": "album-harbor-lights",
+      "id": "00000000-0000-4000-8000-000000002001",
       "title": "Harbor Lights",
-      "artists": [{ "id": "artist-paper-lanterns", "name": "The Paper Lanterns" }],
+      "artists": [{ "id": "00000000-0000-4000-8000-000000001001", "name": "The Paper Lanterns" }],
       "kind": "album",
       "releaseDate": "1998-04",
-      "trackIds": ["track-harbor-studio", "track-harbor-remaster"],
+      "trackIds": ["00000000-0000-4000-8000-000000003001", "00000000-0000-4000-8000-000000003002"],
       "artwork": [{ "url": "https://example.com/fixtures/harbor-lights.jpg", "widthPx": 500, "heightPx": 500 }],
       "providerRefs": [{ "provider": "fixture", "id": "r1" }]
     }
   ],
   "tracks": [
     {
-      "id": "track-harbor-studio",
+      "id": "00000000-0000-4000-8000-000000003001",
       "title": "Harbor Lights",
-      "artists": [{ "id": "artist-paper-lanterns", "name": "The Paper Lanterns" }],
-      "albumId": "album-harbor-lights",
+      "artists": [{ "id": "00000000-0000-4000-8000-000000001001", "name": "The Paper Lanterns" }],
+      "albumId": "00000000-0000-4000-8000-000000002001",
       "durationMs": 214000,
       "explicit": "not-explicit",
       "isrc": "ZZFIX9800001",
@@ -30,10 +30,10 @@
       "providerRefs": [{ "provider": "fixture", "id": "t1" }]
     },
     {
-      "id": "track-harbor-remaster",
+      "id": "00000000-0000-4000-8000-000000003002",
       "title": "Harbor Lights (2018 Remaster)",
-      "artists": [{ "id": "artist-paper-lanterns", "name": "The Paper Lanterns" }],
-      "albumId": "album-harbor-lights",
+      "artists": [{ "id": "00000000-0000-4000-8000-000000001001", "name": "The Paper Lanterns" }],
+      "albumId": "00000000-0000-4000-8000-000000002001",
       "durationMs": 215000,
       "explicit": "not-explicit",
       "versionFlags": ["remaster"],
@@ -41,9 +41,9 @@
       "providerRefs": [{ "provider": "fixture", "id": "t2" }]
     },
     {
-      "id": "track-harbor-live",
+      "id": "00000000-0000-4000-8000-000000003003",
       "title": "Harbor Lights (Live at the Quay)",
-      "artists": [{ "id": "artist-paper-lanterns", "name": "The Paper Lanterns" }],
+      "artists": [{ "id": "00000000-0000-4000-8000-000000001001", "name": "The Paper Lanterns" }],
       "albumId": null,
       "durationMs": 301000,
       "explicit": "unknown",
@@ -52,9 +52,9 @@
       "providerRefs": [{ "provider": "fixture", "id": "t3" }]
     },
     {
-      "id": "track-harbor-cover",
+      "id": "00000000-0000-4000-8000-000000003004",
       "title": "Harbor Lights",
-      "artists": [{ "id": "artist-mira-vale", "name": "Mira Vale" }],
+      "artists": [{ "id": "00000000-0000-4000-8000-000000001002", "name": "Mira Vale" }],
       "albumId": null,
       "durationMs": 214500,
       "explicit": "not-explicit",
@@ -63,9 +63,9 @@
       "providerRefs": [{ "provider": "fixture", "id": "t4" }]
     },
     {
-      "id": "track-static-explicit",
+      "id": "00000000-0000-4000-8000-000000003005",
       "title": "Static",
-      "artists": [{ "id": "artist-tin-choir", "name": "Tin Choir" }],
+      "artists": [{ "id": "00000000-0000-4000-8000-000000001003", "name": "Tin Choir" }],
       "albumId": null,
       "durationMs": 180000,
       "explicit": "explicit",
@@ -74,9 +74,9 @@
       "providerRefs": [{ "provider": "fixture", "id": "t5" }]
     },
     {
-      "id": "track-static-clean",
+      "id": "00000000-0000-4000-8000-000000003006",
       "title": "Static (Clean)",
-      "artists": [{ "id": "artist-tin-choir", "name": "Tin Choir" }],
+      "artists": [{ "id": "00000000-0000-4000-8000-000000001003", "name": "Tin Choir" }],
       "albumId": null,
       "durationMs": 180000,
       "explicit": "not-explicit",
@@ -88,10 +88,10 @@
   "matches": [
     {
       "status": "matched",
-      "trackId": "track-harbor-studio",
+      "trackId": "00000000-0000-4000-8000-000000003001",
       "accepted": {
-        "id": "candidate-studio-open",
-        "trackId": "track-harbor-studio",
+        "id": "00000000-0000-4000-8000-000000004001",
+        "trackId": "00000000-0000-4000-8000-000000003001",
         "provider": "fixture-open-audio",
         "sourceId": "s1",
         "durationMs": 214000,
@@ -109,11 +109,11 @@
     },
     {
       "status": "ambiguous",
-      "trackId": "track-harbor-remaster",
+      "trackId": "00000000-0000-4000-8000-000000003002",
       "candidates": [
         {
-          "id": "candidate-remaster-a",
-          "trackId": "track-harbor-remaster",
+          "id": "00000000-0000-4000-8000-000000004002",
+          "trackId": "00000000-0000-4000-8000-000000003002",
           "provider": "fixture-open-audio",
           "sourceId": "s2",
           "durationMs": 215000,
@@ -123,8 +123,8 @@
           "accessBasis": "open-license"
         },
         {
-          "id": "candidate-remaster-b",
-          "trackId": "track-harbor-remaster",
+          "id": "00000000-0000-4000-8000-000000004003",
+          "trackId": "00000000-0000-4000-8000-000000003002",
           "provider": "fixture-open-audio",
           "sourceId": "s3",
           "durationMs": 214000,
@@ -138,11 +138,11 @@
     },
     {
       "status": "no-match",
-      "trackId": "track-harbor-live",
+      "trackId": "00000000-0000-4000-8000-000000003003",
       "rejected": [
         {
-          "id": "candidate-live-trap",
-          "trackId": "track-harbor-live",
+          "id": "00000000-0000-4000-8000-000000004004",
+          "trackId": "00000000-0000-4000-8000-000000003003",
           "provider": "fixture-open-audio",
           "sourceId": "s4",
           "durationMs": 214000,
@@ -159,9 +159,9 @@
     }
   ],
   "recommendations": [
-    { "trackId": "track-harbor-studio", "reason": "Fixture: because you saved this artist" },
-    { "trackId": "track-harbor-live", "reason": "Fixture: more from this artist" },
-    { "trackId": "track-static-explicit", "reason": "Fixture: popular this week" },
-    { "trackId": "track-static-clean", "reason": "Fixture: popular this week" }
+    { "trackId": "00000000-0000-4000-8000-000000003001", "reason": "Fixture: because you saved this artist" },
+    { "trackId": "00000000-0000-4000-8000-000000003003", "reason": "Fixture: more from this artist" },
+    { "trackId": "00000000-0000-4000-8000-000000003005", "reason": "Fixture: popular this week" },
+    { "trackId": "00000000-0000-4000-8000-000000003006", "reason": "Fixture: popular this week" }
   ]
 }

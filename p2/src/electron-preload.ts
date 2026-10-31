@@ -1,5 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { DownloadJob, LocalArtifact, PlayerState, QueueItem } from './contracts.ts';
+import type { TrackRequest } from './youtube-source.ts';
+import type { PlayableSource } from './contracts.ts';
 
 export interface P2Bridge {
   jobs(): Promise<DownloadJob[]>;
@@ -11,6 +13,8 @@ export interface P2Bridge {
   selectLocalFiles(): Promise<QueueItem[]>;
   loadPlayer(): Promise<PlayerState | null>;
   savePlayer(state: PlayerState): Promise<void>;
+  resolveStream(track: TrackRequest): Promise<PlayableSource>;
+  downloadTrack(track: TrackRequest): Promise<DownloadJob>;
   onJob(listener: (job: DownloadJob) => void): () => void;
 }
 
@@ -24,6 +28,8 @@ const bridge: P2Bridge = {
   selectLocalFiles: () => ipcRenderer.invoke('p2:select-local'),
   loadPlayer: () => ipcRenderer.invoke('p2:load-player'),
   savePlayer: state => ipcRenderer.invoke('p2:save-player', state),
+  resolveStream: track => ipcRenderer.invoke('p2:resolve-stream', track),
+  downloadTrack: track => ipcRenderer.invoke('p2:download-track', track),
   onJob: listener => {
     const handler = (_event: Electron.IpcRendererEvent, job: DownloadJob) => listener(job);
     ipcRenderer.on('p2:job', handler);

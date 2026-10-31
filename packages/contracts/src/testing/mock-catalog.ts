@@ -95,7 +95,7 @@ export function createMockCatalog(fixtures: CatalogFixtures, { pageSize = 2 } = 
     async findCandidates(trackId, options) {
       const stopped = cancelled(options);
       if (stopped) return stopped;
-      if (!trackById.has(trackId)) return notFound('track', trackId);
+      if (!trackById.has(trackId) && !options?.hint) return notFound('track', trackId);
       const match = fixtures.matches.find((item) => item.trackId === trackId);
       return ok(match ?? { status: 'no-match', trackId, rejected: [], reasons: [{ signal: 'no-results', detail: 'No candidates in fixtures' }] });
     },

@@ -29,7 +29,7 @@ const idle: PlayerState = { generation: 0, status: 'idle', currentItemId: null, 
 async function createPlayback(): Promise<{ player: Player; dispose(): void }> {
   const bridge = (window as { p2?: P2Bridge }).p2;
   if (bridge) {
-    try { return await createRendererPlayer(bridge, previewSource, recordListening); }
+    try { return await createRendererPlayer(bridge, { resolveStream: item => bridge.resolveStream({ trackId: item.trackId, title: item.title, artist: item.artist, durationMs: item.durationMs || 180000 }) }, recordListening); }
     catch (error) { console.error('P2 desktop player unavailable; using renderer-only playback', error); }
   }
   const player = new Player(new BrowserAudio(), { resolve: item => previewSource.resolveStream(item, new AbortController().signal) }, recordListening);

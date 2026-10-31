@@ -8,10 +8,11 @@ registerP2MediaScheme();
 // P2 never falls back to globally installed tools. Until a release bundles Python,
 // FFprobe and FFmpeg, download jobs fail unless these paths are provided.
 const env = (name: string): string => process.env[name] ?? '';
+const appRoot = app.getAppPath();
 const worker: WorkerPaths = {
-  python: env('FYSPOTI_PYTHON'),
-  script: path.join(app.getAppPath(), 'p2', 'worker', 'worker.py'),
-  ffprobe: env('FYSPOTI_FFPROBE'),
+  python: env('FYSPOTI_PYTHON') || path.join(appRoot, 'p2', '.venv', 'Scripts', 'python.exe'),
+  script: path.join(appRoot, 'p2', 'worker', 'worker.py'),
+  ffprobe: env('FYSPOTI_FFPROBE') || 'ffprobe',
   ...(env('FYSPOTI_FFMPEG') ? { ffmpeg: env('FYSPOTI_FFMPEG') } : {}),
   ...(env('FYSPOTI_SPOTDL') ? { spotdl: env('FYSPOTI_SPOTDL') } : {}),
 };
@@ -34,7 +35,7 @@ app.whenReady().then(async () => {
     if (action === 'close') window.close();
   });
   // The renderer falls back to its own player if these handlers are missing.
-  try { await installP2Desktop(window, worker); } catch (error) { console.error('P2 desktop services failed to start', error); }
+  try { await installP2Desktop(window, worker, path.join(appRoot, 'p2', 'worker', 'youtube_source.py')); } catch (error) { console.error('P2 desktop services failed to start', error); }
   await window.loadFile(path.join(__dirname, '../dist/index.html'));
 });
 app.on('window-all-closed', () => app.quit());

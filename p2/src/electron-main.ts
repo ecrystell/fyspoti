@@ -1,26 +1,28 @@
 import { app, dialog, ipcMain, net, protocol, type BrowserWindow } from 'electron';
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
-import type { DownloadRequest, PlayerState } from './contracts.ts';
+import type { DownloadJob, DownloadRequest, PlayerState, PlayableSource } from './contracts.ts';
 import { DownloadManager, type WorkerPaths } from './download-manager.ts';
 import { DownloadStore } from './download-store.ts';
 import { LocalFiles } from './local-files.ts';
 import { PlayerPersistence } from './player-persistence.ts';
+import { YoutubeSource, type TrackRequest } from './youtube-source.ts';
 
 // Call once before app.whenReady().
 export function registerP2MediaScheme(): void {
-  protocol.registerSchemesAsPrivileged([{ scheme: 'p2-media', privileges: { standard: true, secure: true, stream: true, supportFetchAPI: true } }]);
+  protocol.registerSchemesAsPrivileged([{ scheme: 'p2-media', privileges: { standard: true, secure: true, stream: true, supportFetchAPI: true, corsEnabled: true } }]);
 }
 
 export interface P2Desktop {
   manager: DownloadManager;
   localFiles: LocalFiles;
-  enqueueAuthorized(request: DownloadRequest): Promise<void>;
+  enqueueAuthorized(request: DownloadRequest): Promise<DownloadJob>;
 }
 
 // Call after app.whenReady(). The host owns the window and its CSP.
-export async function installP2Desktop(window: BrowserWindow, worker: WorkerPaths): Promise<P2Desktop> {
+export async function installP2Desktop(window: BrowserWindow, worker: WorkerPaths, youtubeScript?: string): Promise<P2Desktop> {
   const manager = new DownloadManager(new DownloadStore(path.join(app.getPath('userData'), 'p2')), worker);
+  const youtube = youtubeScript ? new YoutubeSource(worker.python, youtubeScript) : null;
   const localFiles = new LocalFiles(path.join(app.getPath('userData'), 'p2', 'local-files.json'));
   const playerPersistence = new PlayerPersistence(path.join(app.getPath('userData'), 'p2', 'player.json'));
   await manager.open();
@@ -66,10 +68,21 @@ export async function installP2Desktop(window: BrowserWindow, worker: WorkerPath
     if (!state || !Array.isArray(state.queue) || state.queue.length > 10000) throw new Error('Invalid player state');
     await playerPersistence.save(state);
   });
+  ipcMain.handle('p2:resolve-stream', async (event, track: TrackRequest): Promise<PlayableSource> => {
+    fromWindow(event);
+    if (!youtube) throw new Error('Full-track source is not configured');
+    return youtube.resolve(track);
+  });
+  ipcMain.handle('p2:download-track', async (event, track: TrackRequest): Promise<DownloadJob> => {
+    fromWindow(event);
+    if (!youtube) throw new Error('Download source is not configured');
+    const candidate = await youtube.candidate(track);
+    return manager.enqueue({ trackId: track.trackId, candidateId: candidate.id, sourceKind: 'yt-dlp', url: candidate.url, title: track.title });
+  });
   window.on('closed', () => {
-    for (const channel of ['p2:jobs', 'p2:artifacts', 'p2:cancel', 'p2:retry', 'p2:remove-artifact', 'p2:artifact-url', 'p2:select-local', 'p2:load-player', 'p2:save-player']) ipcMain.removeHandler(channel);
+    for (const channel of ['p2:jobs', 'p2:artifacts', 'p2:cancel', 'p2:retry', 'p2:remove-artifact', 'p2:artifact-url', 'p2:select-local', 'p2:load-player', 'p2:save-player', 'p2:resolve-stream', 'p2:download-track']) ipcMain.removeHandler(channel);
     protocol.unhandle('p2-media');
   });
   app.on('before-quit', () => manager.shutdown());
-  return { manager, localFiles, enqueueAuthorized: async request => { await manager.enqueue(request); } };
+  return { manager, localFiles, enqueueAuthorized: request => manager.enqueue(request) };
 }

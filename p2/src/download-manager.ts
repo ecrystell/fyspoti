@@ -70,6 +70,7 @@ export class DownloadManager {
     if (!request.trackId || !request.candidateId || !/^https?:\/\//.test(request.url)) throw new Error('Invalid download request');
     if (request.sourceKind === 'spotdl' && !request.url.startsWith('https://open.spotify.com/track/')) throw new Error('Invalid spotDL track URL');
     if (request.sourceKind === 'spotdl' && !/^https:\/\/(www\.youtube\.com\/watch\?v=|youtu\.be\/)/.test(request.matchedAudioUrl ?? '')) throw new Error('spotDL requires an approved YouTube candidate URL');
+    if (request.sourceKind === 'yt-dlp' && !/^https:\/\/www\.youtube\.com\/watch\?v=[A-Za-z0-9_-]{11}$/.test(request.url)) throw new Error('Invalid YouTube candidate URL');
     const existing = this.store.jobs().find(j => j.trackId === request.trackId && j.candidateId === request.candidateId && !['failed', 'cancelled'].includes(j.status));
     if (existing) return existing;
     const now = Date.now();
@@ -148,6 +149,7 @@ export class DownloadManager {
       const source = path.join(workDir, result.fileName);
       const size = (await stat(source)).size;
       if (size !== result.bytes) throw new Error('Output size mismatch');
+      if (this.store.artifacts().reduce((sum, artifact) => sum + artifact.bytes, 0) + size > this.options.maxBytes) throw new Error('DISK_FULL');
       const target = path.join(this.store.root, 'artifacts', fileName);
       await rename(source, target);
       const artifact: LocalArtifact = { id: artifactId, trackId: job.trackId, candidateId: job.candidateId, fileName, bytes: size, mimeType: result.mimeType, verifiedAt: Date.now() };
