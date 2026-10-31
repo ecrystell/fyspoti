@@ -1,5 +1,5 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": { "composite": false, "noEmit": true, "allowImportingTsExtensions": true, "exactOptionalPropertyTypes": false },
-  "include": ["tests/**/*.ts", "vitest*.ts"]
+  "include": ["tests/**/*.ts", "src/vite-env.d.ts", "vitest*.ts", "playwright.config.ts"]
 }

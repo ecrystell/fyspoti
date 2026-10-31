@@ -1,29 +1,9 @@
-import type { AppError, LibraryApi, MutationContext, Playlist, PlaylistItem, Result, Track, TrackLike } from '@fyspoti/contracts';
+import type { LibraryApi, LibraryAction, LibraryViewState, MutationContext, Result } from '@fyspoti/contracts';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createLibraryApi } from './api.js';
 import type { Database } from './database.js';
 
-export type LibraryAction =
-  | { type: 'create'; title: string }
-  | { type: 'like'; track: Track; liked: boolean }
-  | { type: 'append'; playlistId: string; track: Track }
-  | { type: 'rename'; playlistId: string; title: string }
-  | { type: 'remove'; playlistId: string; itemId: string }
-  | { type: 'reorder'; playlistId: string; itemIds: string[] }
-  | { type: 'delete'; playlistId: string };
-
-export interface LibraryViewState {
-  accountId: string | null;
-  phase: 'ready' | 'loading' | 'mutation-pending' | 'conflict' | 'error';
-  playlists: Playlist[];
-  likedTracks: TrackLike[];
-  playlist: Playlist | null;
-  items: PlaylistItem[];
-  cursors: { playlists: string | null; likes: string | null; items: string | null };
-  error: AppError | null;
-  failedAction: LibraryAction | null;
-  failedContext: MutationContext | null;
-}
+export type { LibraryAction, LibraryViewState } from '@fyspoti/contracts';
 
 const empty = (accountId: string | null): LibraryViewState => ({ accountId, phase: 'ready', playlists: [], likedTracks: [], playlist: null, items: [],
   cursors: { playlists: null, likes: null, items: null }, error: null, failedAction: null, failedContext: null });
@@ -105,6 +85,7 @@ export class LibraryController {
     this.publish({ phase: 'mutation-pending', error: null, failedAction: null, failedContext: null });
     const response: Result<unknown> = await (request.type === 'create' ? api.createPlaylist(request.title, context.mutationId)
       : request.type === 'like' ? api.setTrackLiked(request.track, request.liked, context.mutationId)
+      : request.type === 'likeSnapshot' ? api.setTrackLikeFromSnapshot(request.trackId, request.metadataSnapshot, request.liked, context.mutationId)
       : request.type === 'append' ? api.appendTrack(request.playlistId, request.track, context)
       : request.type === 'rename' ? api.renamePlaylist(request.playlistId, request.title, context)
       : request.type === 'remove' ? api.removePlaylistItem(request.playlistId, request.itemId, context)

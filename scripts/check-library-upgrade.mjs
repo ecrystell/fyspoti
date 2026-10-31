@@ -16,6 +16,7 @@ try {
   sql(`create database ${database};`, 'postgres'); created = true;
   const original = readFileSync('services/cloud/supabase/migrations/20261031033217_create_private_playlists.sql', 'utf8');
   const upgrade = readFileSync('services/cloud/supabase/migrations/20261031043416_connected_core_library.sql', 'utf8');
+  const profiles = readFileSync('services/cloud/supabase/migrations/20261031051447_desktop_accounts_profiles.sql', 'utf8');
   const actor = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
   const playlist = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
   const item = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
@@ -29,6 +30,7 @@ try {
     insert into public.playlist_items(id, playlist_id, track_id, ordering_key, snapshot_title, snapshot_artist_names, snapshot_duration_ms)
       values('${item}', '${playlist}', '11111111-1111-4111-8111-111111111111', 10, 'Original snapshot', ARRAY['Fixture Artist'], 12345);
     ${upgrade}
+    ${profiles}
     do $$ begin
       if not exists(select 1 from public.playlist_items where id='${item}' and playlist_id='${playlist}'
         and track_id='11111111-1111-4111-8111-111111111111' and ordering_key=10
@@ -41,6 +43,7 @@ try {
     end $$;
     select set_config('request.jwt.claim.sub', '${actor}', false);
     set role authenticated;
+    select public.profile_mutate('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee', '${actor}', 0, 'Listener');
     select public.library_mutate('remove_item', 'dddddddd-dddd-4ddd-8ddd-dddddddddddd',
       '{"accountId":"${actor}","playlistId":"${playlist}","itemId":"${item}","expectedRevision":1}');
     reset role;
@@ -50,8 +53,10 @@ try {
       end if;
       if exists(select 1 from public.playlist_items where id='${item}') then raise exception 'Removed item still active'; end if;
       if has_table_privilege('authenticated', 'public.playlists', 'INSERT') then raise exception 'Direct writes remain enabled'; end if;
+      if not exists(select 1 from public.profiles where id='${actor}' and display_name='Listener' and revision=1) then raise exception 'Profile initialization failed'; end if;
+      if has_table_privilege('authenticated', 'public.profiles', 'UPDATE') then raise exception 'Direct profile writes enabled'; end if;
     end $$;`);
-  console.log('Populated Part 1 → Part 2A upgrade passed; identities, snapshots, authorization and tombstones verified.');
+  console.log('Populated Part 1 → Part 2B upgrade passed; identities, snapshots, authorization, tombstones and profiles verified.');
 } catch (error) {
   console.error('Local upgrade check failed:', error.stderr?.toString() ?? error.message);
   process.exitCode = 1;

@@ -15,6 +15,7 @@ function api(overrides: Partial<LibraryApi> = {}): LibraryApi {
     getPlaylist: async () => ok(collection), listPlaylistItems: async () => ok({ items: entries, nextCursor: null }),
     listLikedTracks: async () => ok({ items: [], nextCursor: null }), getTrackLike: async () => unavailable,
     setTrackLiked: async () => unavailable, appendTrack: async () => unavailable, renamePlaylist: async () => unavailable,
+    setTrackLikeFromSnapshot: async () => unavailable,
     removePlaylistItem: async () => unavailable, reorderPlaylistItems: async () => unavailable, deletePlaylist: async () => unavailable,
     ...overrides,
   };

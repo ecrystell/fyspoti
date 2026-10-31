@@ -11,17 +11,18 @@ provider spike and draft catalog contracts. Full application integration is in p
 
 ## Desktop frontend
 
-Person 1's React/Electron UI is implemented. See [frontend features](docs/16-person-1-implementation.md) and [queue/Connect audit](docs/21-queue-connect-menu-audit.md). Backend modules exist but are not yet connected to the prototype.
+The Electron UI connects local email-code accounts to private cloud playlists, likes and display-name profiles. See [desktop accounts setup](docs/22-person-3-desktop-accounts.md), [frontend features](docs/16-person-1-implementation.md) and [queue/Connect audit](docs/21-queue-connect-menu-audit.md).
 
 After installing dependencies:
 
 ```powershell
 npm run setup:desktop
+npm run cloud:start
 npm run build
-npm run desktop
+npm run desktop:local
 ```
 
-Windows shortcut: run `.\launch.ps1`. It finds Node on PATH or the existing Codex runtime. Browser development: `npm run dev`. The UI uses real online metadata/artwork and preview audio; full-track playback, downloads and cloud synchronization are not integrated into the UI yet.
+Read local sign-in codes at `http://127.0.0.1:54324`. Browser development (`npm run dev`) keeps the separate localStorage prototype. Desktop cloud accounts start empty; prototype data is not imported. The UI uses online metadata/artwork and preview audio; full-track playback, downloads and offline synchronization remain separate work. Hosted email is deferred.
 
 ## Development
 
@@ -54,6 +55,7 @@ checks upgrading populated Part 1 data in a disposable local database.
 
 - `@fyspoti/contracts`: playlist types, catalog schemas, pagination and library/catalog interfaces.
 - `@fyspoti/library`: Supabase adapter and in-memory authentication helper.
+- `@fyspoti/accounts`: main-process email-code authentication, encrypted sessions and profile service.
 - `services/cloud`: Supabase configuration, migrations and fixture seed policy.
 
 `npm run build` builds both workspace packages and the desktop frontend. Use `npm run build:packages` or `npm run build:frontend` to build either independently. Run `npm run build:packages` before consuming workspace packages. Each package exports compiled
