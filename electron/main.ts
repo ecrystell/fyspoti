@@ -43,7 +43,7 @@ app.whenReady().then(async () => {
   const playbackModule = await import(pathToFileURL(path.join(appRoot, 'electron/playback.mjs')).href);
   const sourceScript = process.env.FYSPOTI_E2E === '1' && process.env.FYSPOTI_TEST_SOURCE_SCRIPT ? process.env.FYSPOTI_TEST_SOURCE_SCRIPT : path.join(appRoot, 'p2', 'worker', 'youtube_source.py');
   const source = new YoutubeSource(sourcePython, sourceScript);
-  playback = await playbackModule.installPlayback({ app, ipcMain, safeStorage, window, appUrl, accounts: accounts!.service, resolveSource: (track: Parameters<YoutubeSource['resolve']>[0], signal: AbortSignal) => source.resolve(track, signal) });
+  playback = await playbackModule.installPlayback({ app, ipcMain, safeStorage, window, appUrl, accounts: accounts!.service, resolveSource: (track: Parameters<YoutubeSource['resolve']>[0], signal: AbortSignal) => source.resolve(track, signal), prefetchSource: (track: Parameters<YoutubeSource['prefetch']>[0]) => source.prefetch(track) });
   await window.loadFile(path.join(__dirname, '../dist/index.html'));
 }).catch(() => { console.error('Desktop initialization failed. Check the local account configuration.'); app.quit(); });
 app.on('before-quit', event => {
