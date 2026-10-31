@@ -1,5 +1,5 @@
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js';
-import { DesktopSchemas, type AccountState, type AppError, type DesktopState, type LibraryAction, type MutationContext, type Profile, type Result } from '@fyspoti/contracts';
+import { DesktopSchemas, type AccountState, type AppError, type DesktopState, type LibraryAction, type LibraryQueueItem, type MutationContext, type Profile, type Result } from '@fyspoti/contracts';
 import { createLibraryApi, LibraryController, preparePlaylistQueue, type Database } from '@fyspoti/library';
 import { SessionVault, type AuthStorage } from './vault.js';
 
@@ -108,6 +108,11 @@ export class AccountService {
     await this.library.load();
   }
   private stale(): Result<never> { return { ok: false, error: { code: 'AUTH_REQUIRED', message: 'The account changed. Try again.', retryable: false } }; }
+  private checked<T>(result: Result<T>, epoch: number): Result<T> {
+    if (epoch !== this.epoch) return this.stale();
+    if (!result.ok && result.error.code === 'AUTH_REQUIRED' && this.auth.phase === 'authenticated') return this.authError({ status: 401 }, epoch);
+    return result;
+  }
   private authError(error: unknown, epoch: number, codeAttempt = false): Result<never> {
     if (epoch !== this.epoch) return this.stale();
     const failure = accountFailure(error, codeAttempt);
@@ -207,28 +212,48 @@ export class AccountService {
     if (this.auth.phase !== 'authenticated') return this.stale();
     const epoch = this.epoch; await this.library.load(playlistId);
     if (epoch !== this.epoch) return this.stale();
-    const state = this.library.snapshot(); return state.error ? { ok: false, error: state.error } : { ok: true, value: undefined };
+    const state = this.library.snapshot(); return this.checked(state.error ? { ok: false, error: state.error } : { ok: true, value: undefined }, epoch);
   }
   async loadMore(kind: 'playlists' | 'likes' | 'items'): Promise<Result<void>> {
     if (this.auth.phase !== 'authenticated') return this.stale();
     const epoch = this.epoch; await this.library.loadMore(kind);
     if (epoch !== this.epoch) return this.stale();
-    const state = this.library.snapshot(); return state.error ? { ok: false, error: state.error } : { ok: true, value: undefined };
+    const state = this.library.snapshot(); return this.checked(state.error ? { ok: false, error: state.error } : { ok: true, value: undefined }, epoch);
   }
-  async run(action: LibraryAction): Promise<Result<unknown>> { return this.auth.phase === 'authenticated' ? this.library.run(action) : this.stale(); }
-  async retryConflict(): Promise<Result<unknown>> { return this.auth.phase === 'authenticated' ? this.library.retryConflict() : this.stale(); }
-  async retryUncertain(): Promise<Result<unknown>> { return this.auth.phase === 'authenticated' ? this.library.retryUncertain() : this.stale(); }
+  async run(action: LibraryAction): Promise<Result<unknown>> { const epoch = this.epoch; return this.auth.phase === 'authenticated' ? this.checked(await this.library.run(action), epoch) : this.stale(); }
+  async retryConflict(): Promise<Result<unknown>> { const epoch = this.epoch; return this.auth.phase === 'authenticated' ? this.checked(await this.library.retryConflict(), epoch) : this.stale(); }
+  async retryUncertain(): Promise<Result<unknown>> { const epoch = this.epoch; return this.auth.phase === 'authenticated' ? this.checked(await this.library.retryUncertain(), epoch) : this.stale(); }
   async prepareQueue(id: string) {
     if (this.auth.phase !== 'authenticated' || !this.auth.userId) return this.stale();
     const epoch = this.epoch;
     const response = await preparePlaylistQueue(createLibraryApi(this.client, { accountId: this.auth.userId }), id);
-    return epoch === this.epoch ? response : this.stale();
+    return this.checked(response, epoch);
+  }
+  async prepareLikedQueue(): Promise<Result<LibraryQueueItem[]>> {
+    if (this.auth.phase !== 'authenticated' || !this.auth.userId) return this.stale();
+    const epoch = this.epoch; const api = createLibraryApi(this.client, { accountId: this.auth.userId });
+    const items: LibraryQueueItem[] = []; const cursors = new Set<string>(); const ids = new Set<string>(); let cursor: string | undefined;
+    do {
+      const page = await api.listLikedTracks(cursor);
+      if (epoch !== this.epoch) return this.stale();
+      if (!page.ok) return this.checked(page, epoch);
+      for (const like of page.value.items) {
+        if (!like.id || !like.metadataSnapshot || ids.has(like.id)) return { ok: false, error: { code: 'CONFLICT', message: 'Liked Songs changed while preparing playback. Refresh and retry.', retryable: false } };
+        ids.add(like.id);
+        items.push({ id: like.id, trackId: like.trackId, title: like.metadataSnapshot.title, artist: like.metadataSnapshot.artistNames.join(', '), durationMs: like.metadataSnapshot.durationMs });
+        if (items.length > 10000) return { ok: false, error: { code: 'INVALID_ARGUMENT', message: 'Playback supports at most 10000 queue items.', retryable: false } };
+      }
+      cursor = page.value.nextCursor ?? undefined;
+      if (cursor && cursors.has(cursor)) return { ok: false, error: { code: 'UNAVAILABLE', message: 'Invalid pagination response.', retryable: true } };
+      if (cursor) cursors.add(cursor);
+    } while (cursor);
+    return { ok: true, value: items };
   }
   async getTrackLike(trackId: string) {
     if (this.auth.phase !== 'authenticated' || !this.auth.userId) return this.stale();
     const epoch = this.epoch;
     const response = await createLibraryApi(this.client, { accountId: this.auth.userId }).getTrackLike(trackId);
-    return epoch === this.epoch ? response : this.stale();
+    return this.checked(response, epoch);
   }
   async close(): Promise<void> { this.disposed = true; this.epoch++; this.accessToken = null; this.detachClient(); this.library.setAccount(null); await this.options.vault.flush(); this.listeners.clear(); }
 }

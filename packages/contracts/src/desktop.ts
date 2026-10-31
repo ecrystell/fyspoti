@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { Track } from './catalog.ts';
 import type { AppError, Result } from './common.ts';
-import type { LibraryAction, LibraryQueue, LibraryViewState, MutationContext, TrackLike } from './library.ts';
+import type { LibraryAction, LibraryQueue, LibraryQueueItem, LibraryViewState, MutationContext, TrackLike } from './library.ts';
 
 export interface Profile { id: string; displayName: string; revision: number }
 export interface AccountState {
@@ -29,6 +29,7 @@ export interface CloudBridge {
   retryConflict(): Promise<Result<unknown>>;
   retryUncertain(): Promise<Result<unknown>>;
   prepareQueue(playlistId: string): Promise<Result<LibraryQueue>>;
+  prepareLikedQueue(): Promise<Result<LibraryQueueItem[]>>;
   getTrackLike(trackId: string): Promise<Result<TrackLike>>;
   subscribe(listener: (state: DesktopState) => void): () => void;
 }

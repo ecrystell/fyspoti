@@ -20,6 +20,7 @@ export function installAccountHandlers(ipcMain, window, service, appUrl) {
     'retry-conflict': { call: () => service.retryConflict() },
     'retry-uncertain': { call: () => service.retryUncertain() },
     'prepare-queue': { schema: DesktopSchemas.requiredId, call: value => service.prepareQueue(value) },
+    'prepare-liked-queue': { call: () => service.prepareLikedQueue() },
     'get-like': { schema: DesktopSchemas.trackId, call: value => service.getTrackLike(value) },
   };
   for (const [name, route] of Object.entries(routes)) {

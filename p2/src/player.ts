@@ -43,9 +43,10 @@ export class Player {
   }
 
   enqueue(item: QueueItem): void {
+    if (this.state.queue.length >= 10000) throw new Error('Playback supports at most 10000 queue items.');
     if (this.state.queue.some(q => q.id === item.id)) throw new Error('Duplicate queue item ID');
-    this.update({ queue: [...this.state.queue, item] });
     this.upcoming.unshift(item.id);
+    this.update({ queue: [...this.state.queue, item] });
   }
 
   reorderQueue(ids: string[]): void {
@@ -153,5 +154,5 @@ export class Player {
     this.lastClock = now;
   }
   private finishListening(): void { this.accountTime(); const item = this.state.queue.find(q => q.id === this.state.currentItemId); if (item && this.listenedMs > 0) this.emitListening({ id: crypto.randomUUID(), trackId: item.trackId, queueItemId: item.id, listenedMs: this.listenedMs, startedAt: this.startedAt, endedAt: Date.now(), privacyEligible: this.eligible }); this.listenedMs = 0; this.lastClock = 0; }
-  private validateQueue(items: QueueItem[]): void { if (new Set(items.map(i => i.id)).size !== items.length || items.some(i => !i.id || !i.trackId)) throw new Error('Invalid queue'); }
+  private validateQueue(items: QueueItem[]): void { if (items.length > 10000) throw new Error('Playback supports at most 10000 queue items.'); if (new Set(items.map(i => i.id)).size !== items.length || items.some(i => !i.id || !i.trackId)) throw new Error('Invalid queue'); }
 }

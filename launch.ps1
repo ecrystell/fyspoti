@@ -10,6 +10,8 @@ if (-not $nodeRuntime) {
 if (-not $nodeRuntime) { throw 'Node.js was not found. Install Node.js LTS, reopen PowerShell, and run this launcher again.' }
 if (-not (Test-Path -LiteralPath 'node_modules/electron/dist/electron.exe')) { throw 'Electron runtime missing. Run npm install and npm run setup:desktop first.' }
 Write-Host "Building Fyspoti using $nodeRuntime"
+& $nodeRuntime 'node_modules/typescript/bin/tsc' -b
+if ($LASTEXITCODE -ne 0) { throw 'Workspace package build failed' }
 & $nodeRuntime 'scripts/build-p2.mjs'
 if ($LASTEXITCODE -ne 0) { throw 'P2 desktop bridge build failed' }
 & $nodeRuntime 'node_modules/typescript/bin/tsc' -p tsconfig.frontend.json

@@ -29,7 +29,10 @@ const idle: PlayerState = { generation: 0, status: 'idle', currentItemId: null, 
 async function createPlayback(): Promise<{ player: Player; dispose(): void }> {
   const bridge = (window as { p2?: P2Bridge }).p2;
   if (bridge) {
-    try { return await createRendererPlayer(bridge, { resolveStream: item => bridge.resolveStream({ trackId: item.trackId, title: item.title, artist: item.artist, durationMs: item.durationMs || 180000 }) }, recordListening); }
+    try { return await createRendererPlayer(bridge, { resolveStream: item => {
+      if (!item.durationMs) throw new Error('Full-track playback needs known duration.');
+      return bridge.resolveStream({ trackId: item.trackId, title: item.title, artist: item.artist, durationMs: item.durationMs });
+    } }, recordListening); }
     catch (error) { console.error('P2 desktop player unavailable; using renderer-only playback', error); }
   }
   const player = new Player(new BrowserAudio(), { resolve: item => previewSource.resolveStream(item, new AbortController().signal) }, recordListening);
@@ -38,10 +41,11 @@ async function createPlayback(): Promise<{ player: Player; dispose(): void }> {
   return { player, dispose() { unbind(); player.stop(); } };
 }
 
-export function usePlayback(): { player: Player | null; state: PlayerState } {
+export function usePlayback(enabled = true): { player: Player | null; state: PlayerState } {
   const [player, setPlayer] = useState<Player | null>(null);
   const [state, setState] = useState<PlayerState>(idle);
   useEffect(() => {
+    if (!enabled) return;
     let disposed = false;
     let session: { player: Player; dispose(): void } | undefined;
     let unsubscribe = () => {};
@@ -54,7 +58,7 @@ export function usePlayback(): { player: Player | null; state: PlayerState } {
     const save = () => session?.dispose();
     window.addEventListener('beforeunload', save);
     return () => { disposed = true; window.removeEventListener('beforeunload', save); unsubscribe(); session?.dispose(); };
-  }, []);
+  }, [enabled]);
   return { player, state };
 }
 

@@ -4,3 +4,4 @@ export * from './candidates.ts';
 export type * from './api.ts';
 export * from './library.ts';
 export * from './desktop.ts';
+export * from './playback.ts';

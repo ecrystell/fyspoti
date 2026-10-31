@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { AccountState, CloudBridge } from '@fyspoti/contracts';
 import { useDialogFocus } from './useDialogFocus';
+import './account-dialog.css';
 
 export function AccountDialog({ bridge, account, close }: { bridge: CloudBridge; account: AccountState; close(): void }) {
   const dialogRef = useDialogFocus(true);

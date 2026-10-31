@@ -33,6 +33,8 @@ Person 3's next connected slice is documented in
 
 ## M0 results
 
+- [Unified account library and playback](23-person-3-unified-playback.md): Part 2C, P1 shell/panels with P2 playback, encrypted account queues and automatic preview fallback.
+
 - [Desktop accounts and cloud library](22-person-3-desktop-accounts.md): Part 2B local email sign-in, encrypted sessions, profiles and the account-backed Electron UI; hosted email is deferred.
 
 - [Provider spike](16-provider-spike.md): selected sources, measurements and the YouTube exception that needs team confirmation.

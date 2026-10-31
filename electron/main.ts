@@ -1,25 +1,18 @@
 import { app, BrowserWindow, ipcMain, shell, safeStorage } from 'electron';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { installP2Desktop, registerP2MediaScheme } from '../p2/src/electron-main.ts';
-import type { WorkerPaths } from '../p2/src/download-manager.ts';
+import { YoutubeSource } from '../p2/src/youtube-source.ts';
 
-registerP2MediaScheme();
 if (process.env.FYSPOTI_USER_DATA) app.setPath('userData', path.resolve(process.env.FYSPOTI_USER_DATA));
-let accounts: { close(): Promise<void> } | undefined;
+let accounts: { service: unknown; close(): Promise<void> } | undefined;
+let playback: { close(): Promise<void> } | undefined;
 let quitting = false;
 
-// P2 never falls back to globally installed tools. Until a release bundles Python,
-// FFprobe and FFmpeg, download jobs fail unless these paths are provided.
+// Downloads remain in their standalone host. Account mode only starts a source
+// subprocess for an explicit play request, using P2's configured Python runtime.
 const env = (name: string): string => process.env[name] ?? '';
 const appRoot = app.getAppPath();
-const worker: WorkerPaths = {
-  python: env('FYSPOTI_PYTHON') || path.join(appRoot, 'p2', '.venv', 'Scripts', 'python.exe'),
-  script: path.join(appRoot, 'p2', 'worker', 'worker.py'),
-  ffprobe: env('FYSPOTI_FFPROBE') || 'ffprobe',
-  ...(env('FYSPOTI_FFMPEG') ? { ffmpeg: env('FYSPOTI_FFMPEG') } : {}),
-  ...(env('FYSPOTI_SPOTDL') ? { spotdl: env('FYSPOTI_SPOTDL') } : {}),
-};
+const sourcePython = env('FYSPOTI_PYTHON') || path.join(appRoot, 'p2', '.venv', 'Scripts', 'python.exe');
 
 app.whenReady().then(async () => {
   const appUrl = pathToFileURL(path.join(appRoot, 'dist/index.html')).href;
@@ -39,16 +32,18 @@ app.whenReady().then(async () => {
     if (action === 'maximize') window.isMaximized() ? window.unmaximize() : window.maximize();
     if (action === 'close') window.close();
   });
-  // The renderer falls back to its own player if these handlers are missing.
-  try { await installP2Desktop(window, worker, path.join(appRoot, 'p2', 'worker', 'youtube_source.py')); } catch (error) { console.error('P2 desktop services failed to start', error); }
   // P3's session service stays in the main process alongside P2's services.
   const accountModule = await import(pathToFileURL(path.join(appRoot, 'electron/accounts.mjs')).href);
   accounts = await accountModule.installAccounts({ app, ipcMain, safeStorage, window, appUrl });
+  const playbackModule = await import(pathToFileURL(path.join(appRoot, 'electron/playback.mjs')).href);
+  const sourceScript = process.env.FYSPOTI_E2E === '1' && process.env.FYSPOTI_TEST_SOURCE_SCRIPT ? process.env.FYSPOTI_TEST_SOURCE_SCRIPT : path.join(appRoot, 'p2', 'worker', 'youtube_source.py');
+  const source = new YoutubeSource(sourcePython, sourceScript);
+  playback = await playbackModule.installPlayback({ app, ipcMain, safeStorage, window, appUrl, accounts: accounts!.service, resolveSource: (track: Parameters<YoutubeSource['resolve']>[0], signal: AbortSignal) => source.resolve(track, signal) });
   await window.loadFile(path.join(__dirname, '../dist/index.html'));
 }).catch(() => { console.error('Desktop initialization failed. Check the local account configuration.'); app.quit(); });
 app.on('before-quit', event => {
   if (quitting || !accounts) return;
   event.preventDefault(); quitting = true;
-  accounts.close().finally(() => app.quit());
+  Promise.resolve(playback?.close()).then(() => accounts!.close()).finally(() => app.quit());
 });
 app.on('window-all-closed', () => app.quit());

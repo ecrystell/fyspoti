@@ -67,6 +67,7 @@ async function serviceFixture() {
   const item = await fixture();
   let now = 100000; let verifyStatus = 200; let userStatus = 200; let revokeFails = false;
   let delayed: Promise<Response> | null = null;
+  let likedRows: Database['public']['Tables']['track_likes']['Row'][] = []; let libraryDenied = false;
   const fetcher = vi.fn<typeof fetch>(async (input, init) => {
     const url = new URL(typeof input === 'string' ? input : input instanceof URL ? input : input.url);
     if (url.pathname.endsWith('/otp')) return Response.json({});
@@ -74,15 +75,33 @@ async function serviceFixture() {
     if (url.pathname.endsWith('/user')) return userStatus === 200 ? Response.json(user) : Response.json({ message: 'unavailable' }, { status: userStatus });
     if (url.pathname.endsWith('/logout')) return revokeFails ? Response.json({ message: 'offline' }, { status: 400 }) : new Response(null, { status: 204 });
     if (url.pathname.endsWith('/profile_mutate')) return Response.json({ id: user.id, displayName: 'Listener', revision: 1 });
+    if (url.pathname.endsWith('/track_likes')) {
+      if (libraryDenied) return Response.json({ message: 'Expired JWT', code: 'PGRST301' }, { status: 401 });
+      const after = url.searchParams.get('id')?.replace('gt.', '');
+      return Response.json(likedRows.filter(row => !after || row.id > after).slice(0, Number(url.searchParams.get('limit') ?? 51)));
+    }
     return Response.json([]);
   });
   const make = () => new AccountService({ url: 'http://127.0.0.1:54321', publishableKey: 'test-publishable-key', vault: item.vault, now: () => now,
     makeClient: storage => createClient<Database>('http://127.0.0.1:54321', 'test-publishable-key', { auth: { storage, persistSession: true, autoRefreshToken: false, detectSessionInUrl: false }, global: { fetch: fetcher } }),
   });
   const service = make(); item.service = service; await service.initialize();
-  return { ...item, service, fetcher, make, clock: (value: number) => { now = value; }, failCode: () => { verifyStatus = 403; }, failUser: (status: number) => { userStatus = status; }, failRevoke: () => { revokeFails = true; }, delay: (promise: Promise<Response>) => { delayed = promise; } };
+  return { ...item, service, fetcher, make, likes: (rows: typeof likedRows) => { likedRows = rows; }, denyLibrary: () => { libraryDenied = true; }, clock: (value: number) => { now = value; }, failCode: () => { verifyStatus = 403; }, failUser: (status: number) => { userStatus = status; }, failRevoke: () => { revokeFails = true; }, delay: (promise: Promise<Response>) => { delayed = promise; } };
 }
 describe('passwordless account lifecycle', () => {
+  it('prepares all Liked Songs pages with stable queue IDs and saved metadata', async () => {
+    const item = await serviceFixture(); await item.service.requestEmailCode(user.email); await item.service.verifyEmailCode(user.email, '123456');
+    const rows = Array.from({ length: 61 }, (_, i) => ({ id: `10000000-0000-4000-8000-${String(i).padStart(12, '0')}`, owner_id: user.id, track_id: `saved-fixture-${i}`, liked: true, revision: 1, snapshot_title: `Saved ${i}`, snapshot_artist_names: ['First', 'Second'], snapshot_duration_ms: i === 60 ? 0 : 214000 }));
+    item.likes(rows); const prepared = await item.service.prepareLikedQueue();
+    expect(prepared.ok).toBe(true);
+    if (prepared.ok) { expect(prepared.value).toHaveLength(61); expect(prepared.value.at(-1)).toEqual({ id: rows[60]!.id, trackId: rows[60]!.track_id, title: 'Saved 60', artist: 'First, Second', durationMs: 0 }); }
+    expect(item.fetcher.mock.calls.some(([input]) => String(input).includes('id=gt.'))).toBe(true);
+  });
+  it('retires account state when library access reports authentication loss', async () => {
+    const item = await serviceFixture(); await item.service.requestEmailCode(user.email); await item.service.verifyEmailCode(user.email, '123456');
+    item.denyLibrary(); expect(await item.service.getTrackLike('fixture')).toMatchObject({ ok: false, error: { code: 'AUTH_REQUIRED' } });
+    expect(item.service.snapshot()).toMatchObject({ account: { phase: 'reauth-required', userId: null }, profile: null, library: { accountId: null } });
+  });
   it('serializes code requests and rejects a request that races local sign-out', async () => {
     const item = await serviceFixture();
     const first = item.service.requestEmailCode(user.email);

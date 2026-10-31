@@ -1,8 +1,19 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import '../p2/src/electron-preload.ts';
-import type { CloudBridge } from '@fyspoti/contracts';
+import type { CloudBridge, ScopedPlaybackBridge, PlaybackSession } from '@fyspoti/contracts';
 contextBridge.exposeInMainWorld('desktop', {
   windowAction(action: string) { if (['minimize', 'maximize', 'close'].includes(action)) ipcRenderer.send('window-action', action); },
+  playback: {
+    session: () => ipcRenderer.invoke('playback:session'),
+    load: generation => ipcRenderer.invoke('playback:load', generation),
+    save: (generation, snapshot) => ipcRenderer.invoke('playback:save', { generation, snapshot }),
+    resolve: (generation, track) => ipcRenderer.invoke('playback:resolve', { generation, track }),
+    subscribe(listener) {
+      const callback = (_event: Electron.IpcRendererEvent, session: PlaybackSession) => listener(session);
+      ipcRenderer.on('playback:session', callback);
+      return () => ipcRenderer.removeListener('playback:session', callback);
+    },
+  } satisfies ScopedPlaybackBridge,
   cloud: {
     getState: () => ipcRenderer.invoke('fyspoti:state'),
     requestEmailCode: email => ipcRenderer.invoke('fyspoti:request-code', email),
@@ -17,6 +28,7 @@ contextBridge.exposeInMainWorld('desktop', {
     retryConflict: () => ipcRenderer.invoke('fyspoti:retry-conflict'),
     retryUncertain: () => ipcRenderer.invoke('fyspoti:retry-uncertain'),
     prepareQueue: id => ipcRenderer.invoke('fyspoti:prepare-queue', id),
+    prepareLikedQueue: () => ipcRenderer.invoke('fyspoti:prepare-liked-queue'),
     getTrackLike: id => ipcRenderer.invoke('fyspoti:get-like', id),
     subscribe(listener) {
       const handler = (_event: Electron.IpcRendererEvent, state: import('@fyspoti/contracts').DesktopState) => listener(state);

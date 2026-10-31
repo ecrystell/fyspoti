@@ -1,7 +1,7 @@
 import { Track, type TrackMetadataSnapshot } from '@fyspoti/contracts';
 import { provisionalTrackId } from '@fyspoti/catalog';
 
-export interface PreviewRecord { track: Track; preview?: string }
+export interface PreviewRecord { track: Track; albumTitle: string; preview?: string }
 const queries = ['Vince Guaraldi The Great Pumpkin Waltz', 'Taylor Swift End Game', 'Hailee Steinfeld You’re Such A', 'Taylor Swift I Did Something Bad', 'James Arthur Say You Wont Let Go', 'Ariana Grande eternal sunshine', 'underscores Wallsocket', 'glaive all dogs go to heaven'];
 function text(value: unknown): string { return typeof value === 'string' ? value : ''; }
 export async function fromItunes(raw: Record<string, unknown>): Promise<PreviewRecord | null> {
@@ -18,7 +18,7 @@ export async function fromItunes(raw: Record<string, unknown>): Promise<PreviewR
   });
   if (!parsed.success) return null;
   const preview = text(raw.previewUrl);
-  return { track: parsed.data, ...(/^https:\/\/[^/]+\.itunes\.apple\.com\//.test(preview) ? { preview } : {}) };
+  return { track: parsed.data, albumTitle: text(raw.collectionName), ...(/^https:\/\/[^/]+\.itunes\.apple\.com\//.test(preview) ? { preview } : {}) };
 }
 export async function loadPreviewCatalog(signal: AbortSignal): Promise<PreviewRecord[]> {
   const records = await Promise.all(queries.map(async query => {

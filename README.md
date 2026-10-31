@@ -4,12 +4,13 @@ Windows music application built by a four-person team. Implemented foundations i
 Person 3's secure cloud playlists, Person 2's playback/download module, and Person 4's
 provider spike and draft catalog contracts. Full application integration is in progress.
 
-The merged TypeScript Electron shell installs both P2's playback/download bridge
-and P3's account service. The default account UI uses previews and private cloud
-libraries. To build P1/P2's playback prototype, set
-`VITE_FYSPOTI_DESKTOP_MODE=prototype` before `npm run desktop`; its local data stays
-separate. See [P1 integration](docs/22-person-1-integration.md),
-[catalog core](docs/22-catalog-core.md), and [P2 setup](p2/README.md) for that route.
+The Electron app uses P1's original implemented UI, with P3's account-library
+bindings and P2's player behind it. Queues are encrypted per account and restore paused.
+Full-track source failures automatically use an available, labelled preview.
+See [unified desktop handoff](docs/23-person-3-unified-playback.md).
+The browser demo (`npm run dev`) stays separate; the old desktop prototype switch
+has been removed. Import, downloads and local files remain unavailable in account
+mode while their ownership is connected; existing device files are untouched.
 
 - [Plans and architecture](docs/README.md)
 - [Provider spike](docs/16-provider-spike.md) and [capability matrix](docs/17-provider-capability-matrix.md)
@@ -29,7 +30,7 @@ npm run build
 npm run desktop:local
 ```
 
-Read local sign-in codes at `http://127.0.0.1:54324`. Browser development (`npm run dev`) keeps the separate localStorage prototype. Desktop cloud accounts start empty; prototype data is not imported. The UI uses online metadata/artwork and preview audio; full-track playback, downloads and offline synchronization remain separate work. Hosted email is deferred.
+Read local sign-in codes at `http://127.0.0.1:54324`. Desktop cloud accounts start empty; prototype data is not imported. P2's existing full-track source requires its Python setup; preview fallback remains available when the catalog supplies one. P4 catalog integration, downloads and offline synchronization remain separate work. Hosted email is deferred.
 
 ## Development
 
