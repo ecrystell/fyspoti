@@ -43,10 +43,12 @@ export type SearchRequest =
 /** Failures reject with a ProviderFailure so the catalog can turn them into a Result. */
 export class ProviderFailure extends Error {
   public readonly kind: 'rate-limited' | 'network' | 'provider' | 'cancelled';
+  public readonly retryAfterMs: number | undefined;
 
-  constructor(kind: ProviderFailure['kind'], message: string) {
+  constructor(kind: ProviderFailure['kind'], message: string, retryAfterMs?: number) {
     super(message);
     this.kind = kind;
+    this.retryAfterMs = retryAfterMs;
     this.name = 'ProviderFailure';
   }
 }

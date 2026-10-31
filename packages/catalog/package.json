@@ -6,7 +6,8 @@
   "type": "module",
   "exports": {
     ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
-    "./youtube-worker": { "types": "./dist/youtube/worker-client.d.ts", "import": "./dist/youtube/worker-client.js" }
+    "./youtube-worker": { "types": "./dist/youtube/worker-client.d.ts", "import": "./dist/youtube/worker-client.js" },
+    "./file-store": { "types": "./dist/file-store.d.ts", "import": "./dist/file-store.js" }
   },
   "dependencies": {
     "@fyspoti/contracts": "0.1.0-draft.0",

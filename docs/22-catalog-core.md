@@ -14,7 +14,7 @@ Owner: P4. Code is in [packages/catalog](../packages/catalog/src) and [services/
 | MusicBrainz identity, ISRC, credits, Cover Art Archive | Not built. Everything comes from YouTube Music so far. |
 | Discography | Not built. `Artist` has no field for it, so this needs a contract change. |
 | Connected to the app | **Not yet.** P1's renderer still reads the iTunes Search API. |
-| Survives a restart | **No.** The store is in memory until task 9. |
+| Survives a restart | Built (task 9), once the app opens the file store. See [Saved data](#saved-data). |
 
 ## How to use it
 
@@ -24,13 +24,21 @@ Run this in Electron main or Node, because it starts a Python process. The rende
 import { createCatalog } from '@fyspoti/catalog';
 import { createYtMusicWorker } from '@fyspoti/catalog/youtube-worker';
 
+import { openFileCatalogStore } from '@fyspoti/catalog/file-store';
+
 const worker = createYtMusicWorker({ python, workerPath });
-const catalog = createCatalog({ ytMusic: worker });
+const store = await openFileCatalogStore({ path: join(app.getPath('userData'), 'catalog.json') });
+const catalog = createCatalog({ ytMusic: worker, store });
 
 const page = await catalog.search('some song', null);
 const match = await catalog.findCandidates(trackId);
+
+// Before quitting:
+await store.flush();
 worker.close();
 ```
+
+Without `store`, the catalog keeps everything in memory and forgets it on restart.
 
 Install the worker's dependencies with `pip install -r services/catalog-worker/requirements.txt`. A packaged app needs to ship that Python, which is the same job as P2's worker.
 
@@ -43,6 +51,33 @@ await catalog.findCandidates(item.trackId, { hint: item.metadataSnapshot });
 ```
 
 The catalog only knows tracks it has seen on this install. Without the hint, a synced or imported track returns `UNAVAILABLE`.
+
+## Saved data
+
+Tracks, albums, artists, matches and corrections are saved to one device-local JSON file. It holds no audio, stream URLs or credentials, and it never goes to the cloud. It's shared by every account on a device, which is fine for catalog data. Corrections are the one personal item.
+
+| Data | Refreshed after | During an outage |
+| --- | --- | --- |
+| Search results | 5 minutes, held in memory only | Old results are shown |
+| Album, artist | 7 days | Old copy is shown |
+| Track | Never refreshed by ID | Old copy is shown |
+| Match that succeeded | 30 days | Old match is used |
+| Ambiguous match | 1 day | Old result is used |
+| No match | 1 hour, because the fault may have been temporary | Old result is used |
+| Correction | Never expires, and is never dropped | Kept |
+
+- `catalog.freshness(id)` gives the save time and whether the copy is stale, so a screen can say so. It is on `Catalog`, not in the shared contract, so `CatalogApi` is unchanged.
+- **Limit:** 50,000 of each kind. The oldest go first. A dropped track can be found again by search or by its snapshot.
+- **Saving** happens about 2 seconds after a change, through a temporary file. Call `flush()` before quitting, or the last 2 seconds are lost. A failed save is reported to `onSaveError`, and search and playback carry on.
+- **Unreadable file:** it's renamed to `catalog.json.unreadable` and the app starts empty, so corrections can still be recovered by hand. A single bad record is dropped alone.
+- **JSON, not SQLite,** because SQLite needs a native dependency and a lockfile change. The whole file is rewritten on each save. At 50,000 tracks that was 37 MB and 114 ms of blocked main process per save, measured once. That is fine for a demo, and normal use stays far smaller. `CatalogStore` is an interface, so SQLite can replace it.
+- **A correction can be lost to provider variation.** `acceptSourceId` only applies when that row comes back in a search, and results vary between runs. A saved match covers it for 30 days.
+
+## Backoff
+
+After a rate limit, the catalog stops calling YouTube Music for 30 seconds, then doubles the wait each time up to 10 minutes. One success resets it. `retryAfterMs` gives the real time left, so a screen can show it. Saved data still works during the wait.
+
+Only rate limits trigger this. An outage has no wait, so a person can retry at once.
 
 ## Identity
 
@@ -123,13 +158,13 @@ How to read this:
 
 | Situation | Result |
 | --- | --- |
-| HTTP 429 | `RATE_LIMITED`, retryable after 30 s. The real limit is unknown. |
+| HTTP 429 | `RATE_LIMITED`, with the wait in `retryAfterMs`. The real limit is unknown. |
 | Network failure or 15 s timeout | `UNAVAILABLE`, retryable |
 | Provider layout change, or an unexpected shape | `UNAVAILABLE`, retryable |
 | Python missing, or worker crash | `UNAVAILABLE`. The next call restarts the worker. |
 | Cancelled | `CANCELLED`. The worker's reply is dropped, because a call in flight cannot be stopped. |
 
-The worker reads metadata only, with no cookies or accounts. It does not retry or back off, so a rate limit goes straight to the caller. That is task 9 and task 16.
+The worker reads metadata only, with no cookies or accounts. Failures with no saved copy to fall back on go to the caller. The screens that show them are task 16.
 
 ## Requests to other owners
 

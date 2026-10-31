@@ -3,6 +3,7 @@ import { classify } from './matching/classify.js';
 import { scoreRow, type MatchTarget, type ScoredRow, type SourceRow } from './matching/score.js';
 import { candidateId } from './recording/identity.js';
 import { createMemoryCatalogStore, type CatalogStore, type MatchOverride } from './store.js';
+import { withBackoff } from './youtube/backoff.js';
 import { albumFromRow, artistFromRow, sourceFromRow, trackFromRow } from './youtube/normalize.js';
 import { ProviderFailure, YTMUSIC_PROVIDER, type TrackRow, type YtMusicPort } from './youtube/port.js';
 
@@ -14,8 +15,14 @@ const ALBUMS_PER_PAGE = 4;
 const ARTISTS_PER_PAGE = 2;
 const SEARCH_CACHE_SIZE = 50;
 const SEARCH_CACHE_TTL_MS = 5 * 60 * 1000;
+const DEFAULT_RETRY_AFTER_MS = 30_000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const METADATA_TTL_MS = 7 * DAY_MS;
+// A good match rarely changes. A failed one is retried soon, because the fault may
+// have been a bad moment at the provider and not a missing recording.
+const MATCH_TTL_MS: Readonly<Record<MatchResult['status'], number>> = { matched: 30 * DAY_MS, ambiguous: DAY_MS, 'no-match': 60 * 60 * 1000 };
 
-const ok = <T>(value: T): Result<T> => ({ ok: true, value });
+const ok =<T>(value: T): Result<T> => ({ ok: true, value });
 const fail = (error: AppError): Result<never> => ({ ok: false, error });
 const unknownId = (kind: string, id: string): Result<never> => fail({ code: 'UNAVAILABLE', message: `Unknown ${kind}: ${id}`, retryable: false });
 
@@ -26,7 +33,7 @@ function toAppError(error: unknown): AppError {
     case 'cancelled':
       return { code: 'CANCELLED', message: 'Request was cancelled', retryable: false };
     case 'rate-limited':
-      return { code: 'RATE_LIMITED', message: 'YouTube Music is limiting requests', retryable: true, retryAfterMs: 30_000, provider };
+      return { code: 'RATE_LIMITED', message: 'YouTube Music is limiting requests', retryable: true, retryAfterMs: error.retryAfterMs ?? DEFAULT_RETRY_AFTER_MS, provider };
     case 'network':
       return { code: 'UNAVAILABLE', message: 'YouTube Music could not be reached', retryable: true, provider };
     case 'provider':
@@ -41,6 +48,10 @@ const guarded = async <T>(work: () => Promise<Result<T>>): Promise<Result<T>> =>
     return fail(toAppError(error));
   }
 };
+
+// Old data beats an error when the provider is down. A cancellation is the caller
+// leaving, so it is never answered with stale data.
+const canUseStale = (error: unknown): boolean => error instanceof ProviderFailure && error.kind !== 'cancelled';
 
 const encodeCursor = (query: string, offset: number): Cursor => btoa(encodeURIComponent(JSON.stringify({ query, offset })));
 
@@ -78,13 +89,23 @@ export interface CatalogOptions {
   now?: () => number;
 }
 
+export interface Freshness {
+  savedAt: number;
+  /** The data is old enough to be out of date, or was kept through a provider outage. */
+  stale: boolean;
+}
+
 export interface Catalog extends CatalogApi {
   /** Saves a person's correction of a match for this track. */
   setMatchOverride(trackId: string, override: MatchOverride): void;
+  /** How old the saved copy of a track, album or artist is. Null if there is none. */
+  freshness(id: string): Freshness | null;
 }
 
-export function createCatalog({ ytMusic, store = createMemoryCatalogStore(), now = Date.now }: CatalogOptions): Catalog {
+export function createCatalog({ ytMusic: provider, now = Date.now, store = createMemoryCatalogStore({ now }) }: CatalogOptions): Catalog {
+  const ytMusic = withBackoff(provider, now);
   const searches = new Map<string, { hits: SearchHit[]; expiresAt: number }>();
+  const isFresh = (id: string): boolean => now() - (store.savedAt(id) ?? 0) < METADATA_TTL_MS;
 
   async function rememberRow(row: TrackRow): Promise<Track | null> {
     const track = await trackFromRow(row);
@@ -104,12 +125,19 @@ export function createCatalog({ ytMusic, store = createMemoryCatalogStore(), now
     const cached = searches.get(query);
     if (cached && cached.expiresAt > now()) return cached.hits;
 
-    const [songs, albums, artists] = await Promise.all([
-      ytMusic.searchTracks(query, 'songs', SEARCH_LIMIT, signal),
-      // A song list with no albums is still useful, so these two may fail alone.
-      ytMusic.searchAlbums(query, SEARCH_LIMIT, signal).catch(whenNotCancelled([])),
-      ytMusic.searchArtists(query, SEARCH_LIMIT, signal).catch(whenNotCancelled([])),
-    ]);
+    let shelves;
+    try {
+      shelves = await Promise.all([
+        ytMusic.searchTracks(query, 'songs', SEARCH_LIMIT, signal),
+        // A song list with no albums is still useful, so these two may fail alone.
+        ytMusic.searchAlbums(query, SEARCH_LIMIT, signal).catch(whenNotCancelled([])),
+        ytMusic.searchArtists(query, SEARCH_LIMIT, signal).catch(whenNotCancelled([])),
+      ]);
+    } catch (error) {
+      if (cached && canUseStale(error)) return cached.hits;
+      throw error;
+    }
+    const [songs, albums, artists] = shelves;
 
     const tracks = present(await Promise.all(songs.map(rememberRow)));
     const albumHits = present(await Promise.all(albums.map((row) => albumFromRow(row))));
@@ -162,7 +190,22 @@ export function createCatalog({ ytMusic, store = createMemoryCatalogStore(), now
     return [...songs, ...videos.filter((row) => !seen.has(row.sourceId))];
   }
 
+  // Saved so a repeat play or a re-import costs no provider call, and so a song that
+  // matched before still plays during an outage.
   async function matchTarget(trackId: string, target: MatchTarget, signal?: AbortSignal): Promise<MatchResult> {
+    const cached = store.getMatch(trackId);
+    if (cached && now() - cached.savedAt < MATCH_TTL_MS[cached.match.status]) return cached.match;
+    try {
+      const match = await computeMatch(trackId, target, signal);
+      store.putMatch(trackId, match);
+      return match;
+    } catch (error) {
+      if (cached && canUseStale(error)) return cached.match;
+      throw error;
+    }
+  }
+
+  async function computeMatch(trackId: string, target: MatchTarget, signal?: AbortSignal): Promise<MatchResult> {
     const override = store.getOverride(trackId);
     const rejectedIds = new Set(override?.rejectSourceIds ?? []);
     const rows = (await fetchRows(target, signal)).filter((row) => !rejectedIds.has(row.sourceId));
@@ -216,6 +259,11 @@ export function createCatalog({ ytMusic, store = createMemoryCatalogStore(), now
   return {
     setMatchOverride: (trackId, override) => store.setOverride(trackId, override),
 
+    freshness: (id) => {
+      const savedAt = store.savedAt(id);
+      return savedAt === undefined ? null : { savedAt, stale: !isFresh(id) };
+    },
+
     search: (query, cursor, options) =>
       guarded(async () => {
         if (options?.signal?.aborted) throw new ProviderFailure('cancelled', 'Request was cancelled');
@@ -236,28 +284,39 @@ export function createCatalog({ ytMusic, store = createMemoryCatalogStore(), now
 
     getAlbum: (albumId, options) =>
       guarded(async () => {
+        const stored = store.getAlbum(albumId);
+        const known = stored && stored.trackIds.length > 0 ? stored : undefined;
+        if (known && isFresh(albumId)) return ok(known);
         const browseId = store.albumRef(albumId);
-        if (!browseId) return unknownId('album', albumId);
-        const known = store.getAlbum(albumId);
-        if (known && known.trackIds.length > 0) return ok(known);
-        const detail = await ytMusic.album(browseId, options?.signal);
-        const tracks = present(await Promise.all(detail.tracks.map(rememberRow)));
-        const album = await albumFromRow(detail, tracks.map((track) => track.id));
-        if (!album) return fail({ code: 'UNAVAILABLE', message: 'YouTube Music returned an incomplete album', retryable: false, provider: YTMUSIC_PROVIDER });
-        store.putAlbum(album);
-        return ok(album);
+        if (!browseId) return known ? ok(known) : unknownId('album', albumId);
+        try {
+          const detail = await ytMusic.album(browseId, options?.signal);
+          const tracks = present(await Promise.all(detail.tracks.map(rememberRow)));
+          const album = await albumFromRow(detail, tracks.map((track) => track.id));
+          if (!album) return fail({ code: 'UNAVAILABLE', message: 'YouTube Music returned an incomplete album', retryable: false, provider: YTMUSIC_PROVIDER });
+          store.putAlbum(album);
+          return ok(album);
+        } catch (error) {
+          if (known && canUseStale(error)) return ok(known);
+          throw error;
+        }
       }),
 
     getArtist: (artistId, options) =>
       guarded(async () => {
         const known = store.getArtist(artistId);
-        if (known) return ok(known);
+        if (known && isFresh(artistId)) return ok(known);
         const browseId = store.artistRef(artistId);
-        if (!browseId) return unknownId('artist', artistId);
-        const artist = await artistFromRow(await ytMusic.artist(browseId, options?.signal));
-        if (!artist) return fail({ code: 'UNAVAILABLE', message: 'YouTube Music returned an incomplete artist', retryable: false, provider: YTMUSIC_PROVIDER });
-        store.putArtist(artist);
-        return ok(artist);
+        if (!browseId) return known ? ok(known) : unknownId('artist', artistId);
+        try {
+          const artist = await artistFromRow(await ytMusic.artist(browseId, options?.signal));
+          if (!artist) return fail({ code: 'UNAVAILABLE', message: 'YouTube Music returned an incomplete artist', retryable: false, provider: YTMUSIC_PROVIDER });
+          store.putArtist(artist);
+          return ok(artist);
+        } catch (error) {
+          if (known && canUseStale(error)) return ok(known);
+          throw error;
+        }
       }),
 
     // Task 12. An error, not an empty page, so a surface cannot look like "no music".
