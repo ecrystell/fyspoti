@@ -16,6 +16,11 @@ class MatchTests(unittest.TestCase):
         ]
         self.assertEqual(choose_video(request, hits), "ccccccccccc")
 
+    def test_matches_primary_artist_of_joined_credit(self):
+        request = {"title": "Example Song", "artist": "Example Artist & Guest", "durationMs": 200000}
+        hits = [{"videoId": "aaaaaaaaaaa", "title": "Example Song", "artists": [{"name": "Example Artist"}, {"name": "Guest"}], "duration_seconds": 200}]
+        self.assertEqual(choose_video(request, hits), "aaaaaaaaaaa")
+
     def test_no_confident_match(self):
         with self.assertRaisesRegex(ValueError, "NO_MATCH"):
             choose_video({"title": "Example Song", "artist": "Example Artist", "durationMs": 200000}, [
