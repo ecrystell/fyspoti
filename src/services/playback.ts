@@ -32,7 +32,7 @@ async function createPlayback(): Promise<{ player: Player; dispose(): void }> {
   if (bridge) {
     try { return await createRendererPlayer(bridge, { resolveStream: item => {
       if (!item.durationMs) throw new Error('Full-track playback needs known duration.');
-      return bridge.resolveStream({ trackId: item.trackId, title: item.title, artist: item.artist, durationMs: item.durationMs });
+      return bridge.resolveStream({ trackId: item.trackId, title: item.title, artist: item.artist, durationMs: item.durationMs, ...(item.candidateId ? { candidateId: item.candidateId } : {}) });
     } }, recordListening); }
     catch (error) { console.error('P2 desktop player unavailable; using renderer-only playback', error); }
   }
@@ -65,6 +65,7 @@ export function usePlayback(enabled = true): { player: Player | null; state: Pla
   return scopedBridge ? { player: scoped.player, state: scoped.state } : { player, state };
 }
 
-export function queueItem(trackId: string, title: string, artist: string, durationMs?: number): QueueItem {
-  return { id: crypto.randomUUID(), trackId, title, artist, ...(durationMs ? { durationMs } : {}) };
+/** `videoId` is the YouTube video the catalog returned; P2 plays it without re-matching. */
+export function queueItem(trackId: string, title: string, artist: string, durationMs?: number, videoId?: string): QueueItem {
+  return { id: crypto.randomUUID(), trackId, title, artist, ...(durationMs ? { durationMs } : {}), ...(videoId ? { candidateId: 'ytmusic:' + videoId } : {}) };
 }

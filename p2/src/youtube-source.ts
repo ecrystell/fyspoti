@@ -6,6 +6,8 @@ export interface TrackRequest {
   title: string;
   artist: string;
   durationMs: number;
+  /** `ytmusic:<videoId>` the catalog already identified. When present, no search or match runs. */
+  candidateId?: string;
 }
 
 export class YoutubeSource {
@@ -24,6 +26,9 @@ export class YoutubeSource {
 
   private run(type: 'resolve' | 'candidate', track: TrackRequest, signal?: AbortSignal): Promise<Record<string, unknown>> {
     if (!track.trackId || track.trackId.length > 200 || !track.title || track.title.length > 300 || !track.artist || track.artist.length > 300 || !Number.isFinite(track.durationMs) || track.durationMs <= 0 || track.durationMs > 3600000) throw new Error('Invalid track metadata');
+    // Account mode passes whole queue items here, so forward only the fields the worker reads.
+    const videoId = /^ytmusic:([A-Za-z0-9_-]{11})$/.exec(track.candidateId ?? '')?.[1];
+    const request = { type, trackId: track.trackId, title: track.title, artist: track.artist, durationMs: track.durationMs, ...(videoId ? { videoId } : {}) };
     return new Promise((resolve, reject) => {
       if (signal?.aborted) { reject(new Error('Source lookup cancelled')); return; }
       const child = spawn(this.python, [this.script], { stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true, shell: false });
@@ -44,7 +49,7 @@ export class YoutubeSource {
           resolve(response.value);
         } catch (error) { reject(error instanceof SyntaxError ? new Error(stderr || 'Source lookup failed') : error); }
       });
-      child.stdin.end(JSON.stringify({ type, ...track }) + '\n');
+      child.stdin.end(JSON.stringify(request) + '\n');
     });
   }
 }
