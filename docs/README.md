@@ -33,6 +33,7 @@ implementation slice and its validation/review status are recorded in
 - [Provider spike](16-provider-spike.md): selected sources, measurements and the YouTube exception that needs team confirmation.
 - [Provider capability matrix](17-provider-capability-matrix.md): what each source can do, and the permitted-content fallback.
 - [Draft shared contracts](../packages/contracts/README.md): proposed catalog schemas, pending P1, P2 and P3 review.
+- [Spotify import](18-spotify-import.md): moving a user's playlists and Liked Songs into the app, and what remains before it works end to end.
 
 The repository is licensed under [MIT](../LICENSE). Public repository rules are in the spike report.
 

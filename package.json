@@ -11,6 +11,7 @@
     "pretest": "npm run build",
     "test": "vitest run --config vitest.config.ts",
     "check": "npm run typecheck && npm test && npm run check --workspace @fyspoti/contracts",
+    "import:preview": "npm run build --silent && node scripts/spotify-import-preview.mjs",
     "test:integration": "node scripts/run-local-integration.mjs",
     "pretest:integration": "npm run build",
     "test:cloud": "node --env-file=.env.cloud ./node_modules/vitest/vitest.mjs run --config vitest.integration.config.ts",
